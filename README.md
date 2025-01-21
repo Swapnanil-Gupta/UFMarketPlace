@@ -11,6 +11,6 @@ UFMarketplace is a web-based platform exclusively designed for the University of
 Contributors:
 ----
 - Manikumar Honnenahalli Lakshminarayana Swamy
-- Rushang Sunil Chiplunker
-- Niscith Bairannanavara Omprakash
+- Rushang Sunil Chiplunkar
+- Nischith Bairannanavara Omprakash
 - Mayur Sai Yaram
