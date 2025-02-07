@@ -1,0 +1,105 @@
+.auth-container {
+    display: flex;
+    justify-content: center; /* Horizontally center */
+    align-items: center; /* Vertically center */
+    min-height: 100vh; /* Full viewport height */
+    background: linear-gradient(45deg, #667eea, #764ba2); /* Gradient background */
+    width: 100%;
+  }
+  
+  form {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    width: 400px;
+    backdrop-filter: blur(10px);
+  }
+  
+  .tabs {
+    position: relative;
+    display: flex;
+    margin-bottom: 2rem;
+  }
+  
+  .tab {
+    flex: 1;
+    text-align: center;
+    padding: 1rem;
+    cursor: pointer;
+    color: #718096;
+    font-weight: 500;
+    transition: color 0.3s ease;
+    text-decoration: none;
+  }
+  
+  .tab.active {
+    color: #4a5568;
+    font-weight: 600;
+  }
+  
+  .underline {
+    position: absolute;
+    bottom: 0;
+    height: 2px;
+    background: #667eea;
+    transition: all 0.1s ease;
+  }
+  
+  .input-container {
+    position: relative;
+    margin-bottom: 2rem;
+  }
+  
+  input {
+    width: 92.5%;
+    padding: 0.8rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 400;
+    transition: border-color 0.3s ease;
+  }
+  
+  input:focus {
+    outline: none;
+    border-color: #667eea;
+  }
+  
+  .submit-btn {
+    width: 100%;
+    padding: 1rem;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    transition: transform 0.2s ease, background 0.3s ease;
+  }
+  
+  .submit-btn:hover {
+    background: #764ba2;
+    transform: translateY(-2px);
+  }
+  
+  .submit-btn:active {
+    transform: translateY(0);
+  }
+
+  /* Form header */
+.tabs .tab {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  
+  /* Input labels */
+  .input-container label {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+  }

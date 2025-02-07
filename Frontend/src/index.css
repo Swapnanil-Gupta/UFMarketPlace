@@ -1,0 +1,15 @@
+
+
+/* Global font styles */
+body {
+  font-family: 'Roboto', sans-serif; /* Primary font (similar to Tesla's body text) */
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Headings and special elements */
+h1, h2, h3, .tesla-style-heading {
+  font-family: 'Montserrat', sans-serif; /* For headings (modern and bold) */
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
