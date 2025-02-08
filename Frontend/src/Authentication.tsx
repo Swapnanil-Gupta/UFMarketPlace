@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSpring, animated } from '@react-spring/web';
-import { useLocation, Link } from 'react-router-dom';
+import { useLocation, Link, useNavigate } from 'react-router-dom';
 import './Authentication.css';
+import { authService } from './AuthService';
 
 interface AnimatedInputProps {
   label: string;
@@ -39,12 +40,23 @@ interface FormData {
 
 const Authentication: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const isLogin = location.pathname === '/login';
+  
   const [formData, setFormData] = useState<FormData>({
     email: '',
     password: '',
     confirmPassword: '',
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Clear form when switching between login/signup
+  useEffect(() => {
+    setFormData({ email: '', password: '', confirmPassword: '' });
+    setError(null);
+    setLoading(false);
+  }, [location.pathname]);
 
   const formAnimation = useSpring({
     opacity: 1,
@@ -57,10 +69,50 @@ const Authentication: React.FC = () => {
     width: '50%',
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const isFormValid = () => {
+    if (isLogin) {
+      return formData.email.trim() !== '' && formData.password.trim() !== '';
+    }
+    return (
+      formData.email.trim() !== '' &&
+      formData.password.trim() !== '' &&
+      formData.confirmPassword.trim() !== ''
+    );
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission here
-    console.log(formData);
+    setLoading(true);
+    setError(null);
+
+    try {
+      if (!isLogin && formData.password !== formData.confirmPassword) {
+        throw new Error('Passwords do not match');
+      }
+
+      if (isLogin) {
+        await authService.login({
+          username: formData.email,
+          password: formData.password
+        });
+        navigate('/dashboard');
+      } else {
+        await authService.signup({
+          username: formData.email,
+          password: formData.password,
+          confirmPassword: formData.confirmPassword
+        });
+        navigate('/dashboard');
+      }
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('An unexpected error occurred');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -77,6 +129,12 @@ const Authentication: React.FC = () => {
             <animated.div className="underline" style={underlineAnimation} />
           </div>
         </div>
+
+        {error && (
+          <div className="error-message">
+            {error}
+          </div>
+        )}
 
         <AnimatedInput
           label="Email"
@@ -100,8 +158,18 @@ const Authentication: React.FC = () => {
           />
         )}
 
-        <button type="submit" className="submit-btn">
-          {isLogin ? 'Login' : 'Sign Up'}
+        <button 
+          type="submit" 
+          className="submit-btn"
+          disabled={loading || !isFormValid()}
+          style={{
+            background: loading || !isFormValid() 
+              ? 'linear-gradient(45deg, #cccccc, #999999)'
+              : 'linear-gradient(45deg, #667eea, #764ba2)',
+            cursor: loading || !isFormValid() ? 'not-allowed' : 'pointer'
+          }}
+        >
+          {loading ? 'Processing...' : isLogin ? 'Login' : 'Sign Up'}
         </button>
       </animated.form>
     </div>
