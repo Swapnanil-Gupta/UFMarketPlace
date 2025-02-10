@@ -2,7 +2,7 @@
 
 ## User Stories
 
-### Authentication & Routing
+### Authentication & Routing (Frontend)
 
 1. **US-001**: As a user, I want to log in with email/password to access protected dashboard features
 2. **US-002**: As a user, I want to sign up for a new account to access the application
@@ -10,6 +10,15 @@
 4. **US-004**: As a logged-in user, I want to stay authenticated between page refreshes
 5. **US-005**: As a user, I want clear error messages for invalid login/signup attempts
 6. **US-006**: As a user, I want to logout user once he clicks on the button and remove the session from the browser and redirect to login page
+
+## Authentication & Routing (Backend)
+
+7. **US-007**: As a developer, I want to implement user authentication logic to verify user credentials
+8. **US-008**: As a developer, I want to set up database connections to store and retrieve user data
+9. **US-009**: As a developer, I want to create user management functions to handle user creation, deletion, and updates
+10. **US-010**: As a developer, I want to implement session management to maintain user sessions securely
+11. **US-011**: As a developer, I want to add password hashing to securely store user passwords
+12. **US-012**: As a developer, I want to implement error handling to provide meaningful error messages for API failures
 
 ## Planned Issues
 
@@ -30,10 +39,17 @@
 | #104  | API service configuration                     | `AuthService.ts` with axios instance and interceptors                             |
 | #105  | Basic error handling                          | Error state management in auth forms                                              |
 | #106  | Add logout functionality                      | `Dashboard.tsx` removing the session logic                                        |
+| #107  | User authentication logic                     | `auth.py` with functions for login and signup                                     |
+| #108  | Database connection setup                     | `database.py` with connection pooling and ORM setup                               |
+| #109  | User management functions                     | `user.py` with functions for creating, updating, and deleting users               |
+| #110  | Session management implementation             | `auth.py` with session creation and validation logic                              |
+| #111  | Password hashing                              | `auth.py` using bcrypt for hashing passwords                                      |
+| #112  | API error handling                            | `utils.py` with custom error classes and handlers                                 |
 
 ## Incomplete Issues
 
-All stories completed successfully.
+1. Verify session ID for every route and API call
+2. User deletion and updates are not implemented in `user.py`.
 
 ## Key Technical Decisions
 
