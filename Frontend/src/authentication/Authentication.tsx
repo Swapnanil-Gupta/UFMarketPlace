@@ -91,7 +91,7 @@ const Authentication: React.FC = () => {
 
     try {
       if(!formData.email.includes("ufl.edu")) {
-        throw new Error('Only UF emailId is allowed');
+        throw new Error('Only UF email is allowed');
       }
       if (!isLogin && formData.password !== formData.confirmPassword) {
         throw new Error('Passwords do not match');

@@ -1,7 +1,7 @@
 
 import axios from 'axios';
 
-const API_BASE_URL = "http://192.168.0.144:8080";
+const API_BASE_URL = "http://localhost:8081";
 
 interface AuthResponse {
   sessionId: string;
@@ -42,7 +42,7 @@ export const authService = {
       
       sessionStorage.setItem('sessionId', response.data.sessionId);
       sessionStorage.setItem('name', response.data.name);
-      sessionStorage.setItem('email', response.data.name);
+      sessionStorage.setItem('email', response.data.email);
       return response.data;
     } catch (error) {
       throw this.handleError(error);
