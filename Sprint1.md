@@ -9,6 +9,7 @@
 3. **US-003**: As an unauthenticated user, I should be redirected to login when trying to access /dashboard
 4. **US-004**: As a logged-in user, I want to stay authenticated between page refreshes
 5. **US-005**: As a user, I want clear error messages for invalid login/signup attempts
+6. **US-006**: As a user, I want to logout user once he clicks on the button and remove the session from the browser and redirect to login page
 
 ## Planned Issues
 
@@ -17,15 +18,18 @@
 3. Add session persistence using browser storage ([#103])
 4. Configure API service with axios interceptors ([#104])
 5. Implement loading states and error handling ([#105])
+6. Added logout functionality([#106])
 
 ## Completed Issues
 
-| Issue | Description                             | Evidence                                                   |
-| ----- | --------------------------------------- | ---------------------------------------------------------- |
-| #101  | Protected route implementation          | `ProtectedRoute.tsx` component using sessionStorage checks |
-| #102  | Auth forms with react-spring animations | `Authentication.tsx` with AnimatedInput components         |
-| #104  | API service configuration               | `AuthService.ts` with axios instance and interceptors      |
-| #105  | Basic error handling                    | Error state management in auth forms                       |
+| Issue | Description                                   | Evidence                                                                          |
+| ----- | --------------------------------------------- | --------------------------------------------------------------------------------- |
+| #101  | Protected route implementation                | `ProtectedRoute.tsx` component using sessionStorage checks                        |
+| #102  | Auth forms with react-spring animations       | `Authentication.tsx` with AnimatedInput components                                |
+| #103  | Add session persistance using browser storage | `AuthService.ts` with by setting the data to session coming from the API response |
+| #104  | API service configuration                     | `AuthService.ts` with axios instance and interceptors                             |
+| #105  | Basic error handling                          | Error state management in auth forms                                              |
+| #106  | Add logout functionality                      | `Dashboard.tsx` removing the session logic                                        |
 
 ## Incomplete Issues
 

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSpring, animated } from '@react-spring/web';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import './Authentication.css';
-import { authService } from './AuthService';
+import { authService } from '../AuthService';
 
 interface AnimatedInputProps {
   label: string;
@@ -33,6 +33,7 @@ const AnimatedInput: React.FC<AnimatedInputProps> = ({ label, type = 'text', val
 };
 
 interface FormData {
+  name: string,
   email: string;
   password: string;
   confirmPassword: string;
@@ -44,16 +45,17 @@ const Authentication: React.FC = () => {
   const isLogin = location.pathname === '/login';
   
   const [formData, setFormData] = useState<FormData>({
+    name: '',
     email: '',
     password: '',
-    confirmPassword: '',
+    confirmPassword: ''
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Clear form when switching between login/signup
   useEffect(() => {
-    setFormData({ email: '', password: '', confirmPassword: '' });
+    setFormData({ name: '', email: '', password: '', confirmPassword: '' });
     setError(null);
     setLoading(false);
   }, [location.pathname]);
@@ -70,10 +72,12 @@ const Authentication: React.FC = () => {
   });
 
   const isFormValid = () => {
+    
     if (isLogin) {
       return formData.email.trim() !== '' && formData.password.trim() !== '';
     }
     return (
+      formData.name.trim() !== '' &&
       formData.email.trim() !== '' &&
       formData.password.trim() !== '' &&
       formData.confirmPassword.trim() !== ''
@@ -86,23 +90,28 @@ const Authentication: React.FC = () => {
     setError(null);
 
     try {
+      if(!formData.email.includes("ufl.edu")) {
+        throw new Error('Only UF emailId is allowed');
+      }
       if (!isLogin && formData.password !== formData.confirmPassword) {
         throw new Error('Passwords do not match');
       }
 
       if (isLogin) {
         await authService.login({
-          username: formData.email,
+          name: formData.name,
+          email: formData.email,
           password: formData.password
         });
         navigate('/dashboard');
       } else {
         await authService.signup({
-          username: formData.email,
+          name: formData.name,
+          email: formData.email,
           password: formData.password,
           confirmPassword: formData.confirmPassword
         });
-        navigate('/dashboard');
+        navigate('/login');
       }
     } catch (err) {
       if (err instanceof Error) {
@@ -135,7 +144,13 @@ const Authentication: React.FC = () => {
             {error}
           </div>
         )}
-
+      {!isLogin && (
+      <AnimatedInput
+          label="Name"
+          value={formData.name}
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+        />
+      )}
         <AnimatedInput
           label="Email"
           value={formData.email}
