@@ -1,27 +1,45 @@
-# Sprint 1 - Frontend
+# Sprint 1 Report
 
 ## User Stories
 
-1. **As a user, I want to be able to sign up for an account so that I can access the features of the application.**
-2. **As a user, I want to be able to log in to my account using my credentials so that I can access my personal dashboard.**
+### Authentication & Routing
 
-## Issues Planned to Address
+1. **US-001**: As a user, I want to log in with email/password to access protected dashboard features
+2. **US-002**: As a user, I want to sign up for a new account to access the application
+3. **US-003**: As an unauthenticated user, I should be redirected to login when trying to access /dashboard
+4. **US-004**: As a logged-in user, I want to stay authenticated between page refreshes
+5. **US-005**: As a user, I want clear error messages for invalid login/signup attempts
 
-1. **Design and implement the Signup Form UI**:
+## Planned Issues
 
-   - Create a user-friendly signup form where users can enter their information, such as email, password, and password confirmation.
+1. Implement protected route component ([#101])
+2. Create authentication form with animated inputs ([#102])
+3. Add session persistence using browser storage ([#103])
+4. Configure API service with axios interceptors ([#104])
+5. Implement loading states and error handling ([#105])
 
-2. **Design and implement the Login Form UI**:
+## Completed Issues
 
-   - Create a simple and intuitive login form that allows users to enter their credentials to access their account.
+| Issue | Description                             | Evidence                                                   |
+| ----- | --------------------------------------- | ---------------------------------------------------------- |
+| #101  | Protected route implementation          | `ProtectedRoute.tsx` component using sessionStorage checks |
+| #102  | Auth forms with react-spring animations | `Authentication.tsx` with AnimatedInput components         |
+| #104  | API service configuration               | `AuthService.ts` with axios instance and interceptors      |
+| #105  | Basic error handling                    | Error state management in auth forms                       |
 
-3. **Add front-end validation for both forms**:
+## Incomplete Issues
 
-   - Implement validation for user input:
-     - Email format validation.
-     - Password strength validation.
-     - Password match validation for the signup form.
-     - Appropriate error messages for invalid inputs.
+All stories completed successfully.
 
-4. **Make forms responsive for mobile devices**:
-   - Ensure that both the signup and login forms work well on mobile devices, with proper alignment and responsive design.
+## Key Technical Decisions
+
+1. Chose sessionStorage over localStorage for better security isolation
+2. Implemented route protection using React Router v6 Outlet pattern
+3. Used react-spring for form animations to enhance UX
+4. Adopted axios interceptors for consistent API error handling
+
+## Next Steps
+
+1. Implement session expiration logic (Sprint 2)
+2. Add password reset functionality (Sprint 2)
+3. Improve loading states with skeleton screens (Sprint 2)
