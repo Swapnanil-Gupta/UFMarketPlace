@@ -1,7 +1,7 @@
 
 import axios from 'axios';
 
-const API_BASE_URL = "http://localhost:8080";
+const API_BASE_URL = "http://192.168.0.144:8080";
 
 interface AuthResponse {
   sessionId: string;
@@ -67,7 +67,7 @@ export const authService = {
 
   handleError(error: unknown): Error {
     if (axios.isAxiosError(error)) {
-      return new Error(error.response?.data?.message || 'Authentication failed');
+      return new Error(error.response?.data || 'Authentication failed');
     }
     return error instanceof Error ? error : new Error('Network error');
   }

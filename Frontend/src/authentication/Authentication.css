@@ -1,9 +1,9 @@
 .auth-container {
     display: flex;
-    justify-content: center; /* Horizontally center */
-    align-items: center; /* Vertically center */
-    min-height: 100vh; /* Full viewport height */
-    background: linear-gradient(45deg, #667eea, #764ba2); /* Gradient background */
+    justify-content: center;
+    align-items: center; 
+    min-height: 100vh; 
+    background: linear-gradient(45deg, #667eea, #764ba2);
     width: 100%;
   }
   

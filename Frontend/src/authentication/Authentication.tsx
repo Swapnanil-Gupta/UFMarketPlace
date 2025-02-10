@@ -111,7 +111,7 @@ const Authentication: React.FC = () => {
           password: formData.password,
           confirmPassword: formData.confirmPassword
         });
-        navigate('/dashboard');
+        navigate('/login');
       }
     } catch (err) {
       if (err instanceof Error) {
