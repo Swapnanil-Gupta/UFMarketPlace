@@ -1,7 +1,7 @@
 
 import axios from 'axios';
 
-const API_BASE_URL = "http://192.168.0.144:8080";
+const API_BASE_URL = "http://localhost:8080";
 
 interface AuthResponse {
   sessionId: string;
@@ -20,8 +20,7 @@ const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
-  },
-  withCredentials: true, 
+  }
 });
 
 
@@ -37,7 +36,6 @@ export const authService = {
   async login(payload: AuthPayload): Promise<AuthResponse> {
     try {
       const response = await api.post<AuthResponse>('/login', {
-        name: payload.name,
         email: payload.email,
         password: payload.password
       });

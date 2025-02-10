@@ -72,6 +72,7 @@ const Authentication: React.FC = () => {
   });
 
   const isFormValid = () => {
+    
     if (isLogin) {
       return formData.email.trim() !== '' && formData.password.trim() !== '';
     }
@@ -89,6 +90,9 @@ const Authentication: React.FC = () => {
     setError(null);
 
     try {
+      if(!formData.email.includes("ufl.edu")) {
+        throw new Error('Only UF emailId is allowed');
+      }
       if (!isLogin && formData.password !== formData.confirmPassword) {
         throw new Error('Passwords do not match');
       }
