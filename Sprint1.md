@@ -1,5 +1,11 @@
 # Sprint 1 Report
 
+## Video Links
+
+1. **Frontend**: [Frontend](https://uflorida-my.sharepoint.com/:v:/g/personal/manikuma_honnena_ufl_edu/EToLoOhUUL5HpnVLnbYe0y4BJ3SYhAa3fVypYHyCvLzx2w?nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJPbmVEcml2ZUZvckJ1c2luZXNzIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXciLCJyZWZlcnJhbFZpZXciOiJNeUZpbGVzTGlua0NvcHkifX0&e=PoyqG6)
+
+2. **Backend**: [Backend](https://uflorida-my.sharepoint.com/:v:/g/personal/chiplun_rushangs_ufl_edu/Ec38f4o3f8dKuX7WpW7JLq4BmIIDNlMYgD4JIU-YuaPpNw?nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJPbmVEcml2ZUZvckJ1c2luZXNzIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXciLCJyZWZlcnJhbFZpZXciOiJNeUZpbGVzTGlua0NvcHkifX0&e=7z7lZP)
+
 ## User Stories
 
 ### Authentication & Routing (Frontend)
