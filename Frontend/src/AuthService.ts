@@ -108,7 +108,7 @@ export const authService = {
       };
       console.log("Formadat " + formData.get("userId"))
 
-      const response = await api.post<ProductResponse[]>('/createListing', formData, config);
+      const response = await api.post<ProductResponse[]>('/listings', formData, config);
       return response.data;
     } catch (error) {
       throw this.handleError(error);

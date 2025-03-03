@@ -54,7 +54,7 @@ func main() {
 	router.HandleFunc("/listings/user", userListingsHandler) // GET (listings for current user)
 	router.HandleFunc("/listing/updateListing", editListingHandler)   // PUT (edit listing)
 	router.HandleFunc("/listing/deleteListing", deleteListingHandler) // DELETE (delete listing)
-	router.HandleFunc("/image", imageHandler)                  // GET (serve image)
+	// router.HandleFunc("/image", imageHandler)                  // GET (serve image)
 
 	handler := c.Handler(router)
 

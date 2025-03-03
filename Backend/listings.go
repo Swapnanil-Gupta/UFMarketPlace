@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -17,18 +18,18 @@ import (
 
 // Listing represents a product listing.
 type Listing struct {
-	ID                 int       `json:"id"`
-	UserEmail          string    `json:"userEmail"`
-	ProductName        string    `json:"productName"`
-	ProductDescription string    `json:"productDescription"`
-	Price              float64   `json:"price"`
-	Category           string    `json:"category"`
-	CreatedAt          time.Time `json:"createdAt"`
-	UpdatedAt          time.Time `json:"updatedAt"`
-	Images             []map[string]interface{} `json:"images,omitempty"`
+	ID                 int                      `json:"id"`
+	UserEmail          string                   `json:"userEmail"`
+	ProductName        string                   `json:"productName"`
+	ProductDescription string                   `json:"productDescription"`
+	Price              float64                  `json:"price"`
+	Category           string                   `json:"category"`
+	CreatedAt          time.Time                `json:"createdAt"`
+	UpdatedAt          time.Time                `json:"updatedAt"`
+	Images             []map[string]interface{} `json:"images"`
 }
 
-// saveImage saves an uploaded image and returns its file path.
+// saveImage saves an uploaded image to disk (if needed).
 func saveImage(fileHeader *multipart.FileHeader) (string, error) {
 	file, err := fileHeader.Open()
 	if err != nil {
@@ -58,7 +59,7 @@ func saveImage(fileHeader *multipart.FileHeader) (string, error) {
 }
 
 // listingsHandler handles GET (fetch all listings excluding the current user)
-// and POST (create new listing with multipart form data).
+// and POST (create new listing with multipart form data) requests.
 func listingsHandler(w http.ResponseWriter, r *http.Request) {
 	currentUserEmail := r.URL.Query().Get("currentUser")
 
@@ -78,17 +79,20 @@ func listingsHandler(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-			imageRows, err := db.Query("SELECT id, content_type FROM listing_images WHERE listing_id = $1", l.ID)
+			// Fetch full image data (id, image_data, content_type)
+			imageRows, err := db.Query("SELECT id, image_data, content_type FROM listing_images WHERE listing_id = $1", l.ID)
 			if err == nil {
 				var images []map[string]interface{}
 				for imageRows.Next() {
 					var imageID int
+					var imageData []byte
 					var contentType string
-					if err := imageRows.Scan(&imageID, &contentType); err == nil {
+					if err := imageRows.Scan(&imageID, &imageData, &contentType); err == nil {
+						encodedData := base64.StdEncoding.EncodeToString(imageData)
 						images = append(images, map[string]interface{}{
 							"id":          imageID,
 							"contentType": contentType,
-							"url":         fmt.Sprintf("/image?id=%d", imageID),
+							"data":        encodedData,
 						})
 					}
 				}
@@ -105,7 +109,7 @@ func listingsHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Unable to parse form data", http.StatusBadRequest)
 			return
 		}
-	
+
 		userEmail := r.FormValue("userEmail")
 		if userEmail == "" {
 			http.Error(w, "Invalid userEmail", http.StatusBadRequest)
@@ -120,7 +124,7 @@ func listingsHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		category := r.FormValue("category")
-	
+
 		var listingID int
 		err = db.QueryRow(
 			"INSERT INTO listings(user_email, product_name, product_description, price, category, created_at, updated_at) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id",
@@ -130,7 +134,7 @@ func listingsHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-	
+
 		files := r.MultipartForm.File["images"]
 		for _, fileHeader := range files {
 			imageData, contentType, err := readImageData(fileHeader)
@@ -138,12 +142,12 @@ func listingsHandler(w http.ResponseWriter, r *http.Request) {
 				log.Printf("Error reading image: %v", err)
 				continue
 			}
-	
+
 			if len(imageData) > 5<<20 {
 				log.Printf("Image too large: %s", fileHeader.Filename)
 				continue
 			}
-	
+
 			_, err = db.Exec(
 				"INSERT INTO listing_images(listing_id, image_data, content_type) VALUES($1, $2, $3)",
 				listingID, imageData, contentType,
@@ -152,15 +156,15 @@ func listingsHandler(w http.ResponseWriter, r *http.Request) {
 				log.Printf("Error saving image record: %v", err)
 			}
 		}
-	
-		// Fetch all listings for the user
+
+		// Fetch all listings for the user (with full image data)
 		rows, err := db.Query("SELECT id, user_email, product_name, product_description, price, category, created_at, updated_at FROM listings WHERE user_email = $1", userEmail)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		defer rows.Close()
-	
+
 		var listings []Listing
 		for rows.Next() {
 			var l Listing
@@ -168,17 +172,20 @@ func listingsHandler(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-			imageRows, err := db.Query("SELECT id, content_type FROM listing_images WHERE listing_id = $1", l.ID)
+			// Now fetch the image data (id, image_data, content_type)
+			imageRows, err := db.Query("SELECT id, image_data, content_type FROM listing_images WHERE listing_id = $1", l.ID)
 			if err == nil {
 				var images []map[string]interface{}
 				for imageRows.Next() {
 					var imageID int
+					var imageData []byte
 					var contentType string
-					if err := imageRows.Scan(&imageID, &contentType); err == nil {
+					if err := imageRows.Scan(&imageID, &imageData, &contentType); err == nil {
+						encodedData := base64.StdEncoding.EncodeToString(imageData)
 						images = append(images, map[string]interface{}{
 							"id":          imageID,
 							"contentType": contentType,
-							"url":         fmt.Sprintf("/image?id=%d", imageID),
+							"data":        encodedData,
 						})
 					}
 				}
@@ -187,10 +194,11 @@ func listingsHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			listings = append(listings, l)
 		}
-	
+
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(listings)
-	}}
+	}
+}
 
 // userListingsHandler handles GET requests to fetch listings for the current user.
 func userListingsHandler(w http.ResponseWriter, r *http.Request) {
@@ -214,17 +222,20 @@ func userListingsHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		imageRows, err := db.Query("SELECT id, content_type FROM listing_images WHERE listing_id = $1", l.ID)
+		// Fetch full image data.
+		imageRows, err := db.Query("SELECT id, image_data, content_type FROM listing_images WHERE listing_id = $1", l.ID)
 		if err == nil {
 			var images []map[string]interface{}
 			for imageRows.Next() {
 				var imageID int
+				var imageData []byte
 				var contentType string
-				if err := imageRows.Scan(&imageID, &contentType); err == nil {
+				if err := imageRows.Scan(&imageID, &imageData, &contentType); err == nil {
+					encodedData := base64.StdEncoding.EncodeToString(imageData)
 					images = append(images, map[string]interface{}{
 						"id":          imageID,
 						"contentType": contentType,
-						"url":         fmt.Sprintf("/image?id=%d", imageID),
+						"data":        encodedData,
 					})
 				}
 			}
@@ -393,32 +404,4 @@ func readImageData(fileHeader *multipart.FileHeader) ([]byte, string, error) {
 
 	contentType := http.DetectContentType(imageData)
 	return imageData, contentType, nil
-}
-
-// imageHandler serves image data from the database.
-func imageHandler(w http.ResponseWriter, r *http.Request) {
-	imageIDStr := r.URL.Query().Get("id")
-	imageID, err := strconv.Atoi(imageIDStr)
-	if err != nil {
-		http.Error(w, "Invalid image ID", http.StatusBadRequest)
-		return
-	}
-
-	var imageData []byte
-	var contentType string
-	err = db.QueryRow(
-		"SELECT image_data, content_type FROM listing_images WHERE id = $1",
-		imageID,
-	).Scan(&imageData, &contentType)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			http.Error(w, "Image not found", http.StatusNotFound)
-			return
-		}
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", contentType)
-	w.Write(imageData)
 }
