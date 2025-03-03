@@ -52,8 +52,8 @@ func main() {
 	router.HandleFunc("/login", loginHandler)
 	router.HandleFunc("/listings", listingsHandler)           // GET (all listings except current user) & POST (create new listing)
 	router.HandleFunc("/listings/user", userListingsHandler) // GET (listings for current user)
-	router.HandleFunc("/listing/edit", editListingHandler)   // PUT (edit listing)
-	router.HandleFunc("/listing/delete", deleteListingHandler) // DELETE (delete listing)
+	router.HandleFunc("/listing/updateListing", editListingHandler)   // PUT (edit listing)
+	router.HandleFunc("/listing/deleteListing", deleteListingHandler) // DELETE (delete listing)
 	router.HandleFunc("/image", imageHandler)                  // GET (serve image)
 
 	handler := c.Handler(router)

@@ -95,7 +95,7 @@ export const authService = {
       formData.append('productDescription', productData.description);
       formData.append('price', productData.price.toString());
       formData.append('category', productData.category);
-      formData.append('userEmail', getUserName());
+      formData.append('userEmail', sessionStorage.getItem('email') || '');
       productData.images.forEach((image, index) => {
         formData.append(`images`, image);
       });
@@ -123,7 +123,7 @@ export const authService = {
       formData.append('productDescription', productData.description);
       formData.append('price', productData.price.toString());
       formData.append('category', productData.category);
-      formData.append('userEmail', getUserName());
+      formData.append('userEmail', sessionStorage.getItem('email') || '');
 
       productData.images.forEach((image, index) => {
         formData.append(`images`, image);

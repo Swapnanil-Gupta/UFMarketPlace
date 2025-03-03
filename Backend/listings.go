@@ -105,7 +105,7 @@ func listingsHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Unable to parse form data", http.StatusBadRequest)
 			return
 		}
-
+	
 		userEmail := r.FormValue("userEmail")
 		if userEmail == "" {
 			http.Error(w, "Invalid userEmail", http.StatusBadRequest)
@@ -120,7 +120,7 @@ func listingsHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		category := r.FormValue("category")
-
+	
 		var listingID int
 		err = db.QueryRow(
 			"INSERT INTO listings(user_email, product_name, product_description, price, category, created_at, updated_at) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id",
@@ -130,7 +130,7 @@ func listingsHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-
+	
 		files := r.MultipartForm.File["images"]
 		for _, fileHeader := range files {
 			imageData, contentType, err := readImageData(fileHeader)
@@ -138,12 +138,12 @@ func listingsHandler(w http.ResponseWriter, r *http.Request) {
 				log.Printf("Error reading image: %v", err)
 				continue
 			}
-
+	
 			if len(imageData) > 5<<20 {
 				log.Printf("Image too large: %s", fileHeader.Filename)
 				continue
 			}
-
+	
 			_, err = db.Exec(
 				"INSERT INTO listing_images(listing_id, image_data, content_type) VALUES($1, $2, $3)",
 				listingID, imageData, contentType,
@@ -152,23 +152,51 @@ func listingsHandler(w http.ResponseWriter, r *http.Request) {
 				log.Printf("Error saving image record: %v", err)
 			}
 		}
-
+	
+		// Fetch all listings for the user
+		rows, err := db.Query("SELECT id, user_email, product_name, product_description, price, category, created_at, updated_at FROM listings WHERE user_email = $1", userEmail)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		defer rows.Close()
+	
+		var listings []Listing
+		for rows.Next() {
+			var l Listing
+			if err := rows.Scan(&l.ID, &l.UserEmail, &l.ProductName, &l.ProductDescription, &l.Price, &l.Category, &l.CreatedAt, &l.UpdatedAt); err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			imageRows, err := db.Query("SELECT id, content_type FROM listing_images WHERE listing_id = $1", l.ID)
+			if err == nil {
+				var images []map[string]interface{}
+				for imageRows.Next() {
+					var imageID int
+					var contentType string
+					if err := imageRows.Scan(&imageID, &contentType); err == nil {
+						images = append(images, map[string]interface{}{
+							"id":          imageID,
+							"contentType": contentType,
+							"url":         fmt.Sprintf("/image?id=%d", imageID),
+						})
+					}
+				}
+				l.Images = images
+				imageRows.Close()
+			}
+			listings = append(listings, l)
+		}
+	
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"message":   "Listing created successfully",
-			"listingId": listingID,
-		})
-
-	default:
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-	}
-}
+		json.NewEncoder(w).Encode(listings)
+	}}
 
 // userListingsHandler handles GET requests to fetch listings for the current user.
 func userListingsHandler(w http.ResponseWriter, r *http.Request) {
-	currentUserEmail := r.URL.Query().Get("currentUser")
+	currentUserEmail := r.URL.Query().Get("userEmail")
 	if currentUserEmail == "" {
-		http.Error(w, "Invalid currentUser parameter", http.StatusBadRequest)
+		http.Error(w, "Invalid userEmail parameter", http.StatusBadRequest)
 		return
 	}
 
