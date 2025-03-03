@@ -41,14 +41,23 @@ func main() {
 		log.Fatalf("Failed to initialize database: %v", err)
 	}
 
-	// Set up HTTP handlers
+	/// Initialize the listings and images tables.
+	if err := initListingsDB(); err != nil {
+		log.Fatalf("Failed to initialize listings database: %v", err)
+	}
+
+	// Set up HTTP routes.
 	router := http.NewServeMux()
 	router.HandleFunc("/signup", signupHandler)
 	router.HandleFunc("/login", loginHandler)
-
+	router.HandleFunc("/listings", listingsHandler)       // GET (all listings except current user) & POST (create new listing)
+	router.HandleFunc("/listings/user", userListingsHandler) // GET (listings for current user)
+	router.HandleFunc("/listing/edit", editListingHandler)   // PUT (edit listing)
+	router.HandleFunc("/listing/delete", deleteListingHandler) // DELETE (delete listing)
+	router.HandleFunc("/image", imageHandler)			 // POST (upload image)
+	
 	handler := c.Handler(router)
 
-	// Determine port from environment variable
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"

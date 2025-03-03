@@ -89,3 +89,35 @@ func CreateSession(userID int) (string, error) {
 	_, err = stmt.Exec(sessionID, userID, expiresAt)
 	return sessionID, err
 }
+
+// initListingsDB creates the listings and listing_images tables.
+func initListingsDB() error {
+	listingsTable := `
+	CREATE TABLE IF NOT EXISTS listings (
+		id SERIAL PRIMARY KEY,
+		user_id INTEGER NOT NULL,
+		product_name TEXT NOT NULL,
+		product_description TEXT,
+		price NUMERIC NOT NULL,
+		category TEXT,
+		created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+		updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+		FOREIGN KEY(user_id) REFERENCES users(id)
+	);`
+	if _, err := db.Exec(listingsTable); err != nil {
+		return fmt.Errorf("error creating listings table: %v", err)
+	}
+
+	imagesTable := `
+	CREATE TABLE IF NOT EXISTS listing_images (
+		id SERIAL PRIMARY KEY,
+		listing_id INTEGER NOT NULL,
+		image_data BYTEA NOT NULL,  
+		content_type TEXT NOT NULL,
+		FOREIGN KEY(listing_id) REFERENCES listings(id)
+	);`
+	if _, err := db.Exec(imagesTable); err != nil {
+		return fmt.Errorf("error creating listing_images table: %v", err)
+	}
+	return nil
+}
