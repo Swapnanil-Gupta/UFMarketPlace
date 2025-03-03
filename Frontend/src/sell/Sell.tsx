@@ -72,11 +72,29 @@ const Sell: React.FC = () => {
   }
 
   useEffect(() => {
-    const savedProducts = localStorage.getItem('products');
-    if (savedProducts) {
-      setProducts(JSON.parse(savedProducts));
-    }
+    const fetchListings = async () => {
+      try {
+        const savedProducts = await authService.getListing();
+        if (savedProducts) {
+
+          const updatedProducts: Product[] = savedProducts.map((prod) => ({
+            id: prod.id,
+            name: prod.name,
+            description: prod.description,
+            price: prod.price,    
+            category: prod.category,
+            images: prod.images, 
+          }));
+          setProducts(updatedProducts);
+        }
+      } catch (error) {
+        console.error('Error fetching listings:', error);
+      }
+    };
+  
+    fetchListings();
   }, []);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,10 +110,8 @@ const Sell: React.FC = () => {
 
       const fileImages = productData.images.map((img, index) => {
         if (typeof img === 'string') {
-          // Convert base64 string to File
           return base64ToFile(img, `existing-image-${index}.png`);
         } else {
-          // Already a File
           return img;
         }
       });
@@ -153,7 +169,6 @@ const Sell: React.FC = () => {
       }
     }
 
-
     setIsModalOpen(false);
     setProductData({
       id: '',
@@ -165,10 +180,18 @@ const Sell: React.FC = () => {
     });
   };
 
-  const handleDelete = (productId: string) => {
-    const updatedProducts = products.filter((p) => p.id !== productId);
-    setProducts(updatedProducts);
-    localStorage.setItem('products', JSON.stringify(updatedProducts));
+  const handleDelete = async (productId: string) => {
+    const res = await authService.deleteListing(productId);
+    const newProducts: Product[] = res.map((prod) => ({
+      id: prod.id,
+      name: prod.name,
+      description: prod.description,
+      price: prod.price, 
+      category: prod.category,
+      images: prod.images,     
+    }));
+
+    setProducts(newProducts);
   };
 
   const handleEdit = (product: Product) => {

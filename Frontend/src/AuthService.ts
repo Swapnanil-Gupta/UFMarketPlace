@@ -43,6 +43,10 @@ const api = axios.create({
   }
 });
 
+function getUserName() {
+  return sessionStorage.getItem("email") || '';
+}
+
 api.interceptors.request.use(config => {
   const sessionId = sessionStorage.getItem('sessionId');
   if (sessionId) {
@@ -91,7 +95,7 @@ export const authService = {
       formData.append('productDescription', productData.description);
       formData.append('price', productData.price.toString());
       formData.append('category', productData.category);
-      formData.append('userId', sessionStorage.getItem('email') || '');
+      formData.append('userEmail', getUserName());
       productData.images.forEach((image, index) => {
         formData.append(`images`, image);
       });
@@ -104,7 +108,7 @@ export const authService = {
       };
       console.log("Formadat " + formData.get("userId"))
 
-      const response = await api.post<ProductResponse[]>('/listings', formData, config);
+      const response = await api.post<ProductResponse[]>('/createListing', formData, config);
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -119,7 +123,7 @@ export const authService = {
       formData.append('productDescription', productData.description);
       formData.append('price', productData.price.toString());
       formData.append('category', productData.category);
-      formData.append('userId', sessionStorage.getItem('email') || '');
+      formData.append('userEmail', getUserName());
 
       productData.images.forEach((image, index) => {
         formData.append(`images`, image);
@@ -133,7 +137,24 @@ export const authService = {
       };
       console.log(formData)
 
-      const response = await api.put<ProductResponse[]>('/product', formData, config);
+      const response = await api.put<ProductResponse[]>('/updateListing', formData, config);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  },
+  async getListing(): Promise<ProductResponse[]> {
+    try {
+
+      const response = await api.get<ProductResponse[]>('/listings?userEmail='+getUserName());
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  },
+  async deleteListing(productId: string): Promise<ProductResponse[]> {
+    try {
+      const response = await api.delete<ProductResponse[]>('/deleteListing?listingId='+productId+'&userEmail='+getUserName());
       return response.data;
     } catch (error) {
       throw this.handleError(error);
