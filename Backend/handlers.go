@@ -8,19 +8,20 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// Credentials represents user login/signup data
+// LogInCredentials represents user login data.
 type LogInCredentials struct {
-	Email string `json:"email"`
+	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
+// SignUpCredentials represents user signup data.
 type SignUpCredentials struct {
-	Email string `json:"email"`
-	Name string `json:"name"`
+	Email    string `json:"email"`
+	Name     string `json:"name"`
 	Password string `json:"password"`
 }
 
-// Handle user registration
+// signupHandler handles user registration.
 func signupHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
@@ -34,7 +35,7 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if creds.Name == "" || creds.Password == "" || creds.Email == "" {
-		http.Error(w, "Email, Name and Password required", http.StatusBadRequest)
+		http.Error(w, "Email, Name, and Password required", http.StatusBadRequest)
 		return
 	}
 
@@ -44,10 +45,10 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if exists {
-		http.Error(w, "Email already registered.", http.StatusBadRequest)
+		http.Error(w, "Email already registered", http.StatusBadRequest)
 		return
 	}
-	
+
 	if err := CreateUser(creds.Name, creds.Password, creds.Email); err != nil {
 		http.Error(w, fmt.Sprintf("Could not register user: %v", err), http.StatusInternalServerError)
 		return
@@ -57,7 +58,7 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"message": "User registered successfully"})
 }
 
-
+// EmailExists checks if an email already exists in the users table.
 func EmailExists(email string) (bool, error) {
 	var exists bool
 	query := "SELECT EXISTS(SELECT 1 FROM users WHERE email = $1)"
@@ -68,7 +69,7 @@ func EmailExists(email string) (bool, error) {
 	return exists, nil
 }
 
-// Handle user login and session creation
+// loginHandler handles user login and session creation.
 func loginHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
@@ -82,11 +83,11 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if creds.Email == "" || creds.Password == "" {
-		http.Error(w, "Username and password required", http.StatusBadRequest)
+		http.Error(w, "Email and password required", http.StatusBadRequest)
 		return
 	}
 
-	userID, storedHash, name, err := GetUser(creds.Email)
+	storedHash, name, err := GetUserPasswordAndName(creds.Email)
 	if err != nil {
 		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
 		return
@@ -97,12 +98,16 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sessionID, err := CreateSession(userID)
+	sessionID, err := CreateSession(creds.Email)
 	if err != nil {
 		http.Error(w, "Error creating session", http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{"sessionId": sessionID, "name": name, "email": creds.Email})
+	json.NewEncoder(w).Encode(map[string]string{
+		"sessionId": sessionID,
+		"name":      name,
+		"email":     creds.Email,
+	})
 }

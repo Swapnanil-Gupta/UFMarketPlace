@@ -18,14 +18,14 @@ import (
 // Listing represents a product listing.
 type Listing struct {
 	ID                 int       `json:"id"`
-	UserID             int       `json:"userId"`
+	UserEmail          string    `json:"userEmail"`
 	ProductName        string    `json:"productName"`
 	ProductDescription string    `json:"productDescription"`
 	Price              float64   `json:"price"`
 	Category           string    `json:"category"`
 	CreatedAt          time.Time `json:"createdAt"`
 	UpdatedAt          time.Time `json:"updatedAt"`
-	Images             []map[string]interface{}  `json:"images,omitempty"`
+	Images             []map[string]interface{} `json:"images,omitempty"`
 }
 
 // saveImage saves an uploaded image and returns its file path.
@@ -60,14 +60,11 @@ func saveImage(fileHeader *multipart.FileHeader) (string, error) {
 // listingsHandler handles GET (fetch all listings excluding the current user)
 // and POST (create new listing with multipart form data).
 func listingsHandler(w http.ResponseWriter, r *http.Request) {
-	// For demonstration, assume current user id is passed as query parameter "currentUser".
-	currentUserStr := r.URL.Query().Get("currentUser")
-	currentUser, _ := strconv.Atoi(currentUserStr)
+	currentUserEmail := r.URL.Query().Get("currentUser")
 
 	switch r.Method {
 	case http.MethodGet:
-		// Fetch all listings not created by current user.
-		rows, err := db.Query("SELECT id, user_id, product_name, product_description, price, category, created_at, updated_at FROM listings WHERE user_id <> $1", currentUser)
+		rows, err := db.Query("SELECT id, user_email, product_name, product_description, price, category, created_at, updated_at FROM listings WHERE user_email <> $1", currentUserEmail)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -77,27 +74,25 @@ func listingsHandler(w http.ResponseWriter, r *http.Request) {
 		var listings []Listing
 		for rows.Next() {
 			var l Listing
-			if err := rows.Scan(&l.ID, &l.UserID, &l.ProductName, &l.ProductDescription, &l.Price, &l.Category, &l.CreatedAt, &l.UpdatedAt); err != nil {
+			if err := rows.Scan(&l.ID, &l.UserEmail, &l.ProductName, &l.ProductDescription, &l.Price, &l.Category, &l.CreatedAt, &l.UpdatedAt); err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-			// Fetch associated images.
-			imageRows, err := db.Query("SELECT image_url FROM listing_images WHERE listing_id = $1", l.ID)
+			imageRows, err := db.Query("SELECT id, content_type FROM listing_images WHERE listing_id = $1", l.ID)
 			if err == nil {
-				var images []string
+				var images []map[string]interface{}
 				for imageRows.Next() {
-					var imageURL string
-					if err := imageRows.Scan(&imageURL); err == nil {
-						images = append(images, imageURL)
+					var imageID int
+					var contentType string
+					if err := imageRows.Scan(&imageID, &contentType); err == nil {
+						images = append(images, map[string]interface{}{
+							"id":          imageID,
+							"contentType": contentType,
+							"url":         fmt.Sprintf("/image?id=%d", imageID),
+						})
 					}
 				}
-				var imageMaps []map[string]interface{}
-				for _, imageURL := range images {
-					imageMaps = append(imageMaps, map[string]interface{}{
-						"url": imageURL,
-					})
-				}
-				l.Images = imageMaps
+				l.Images = images
 				imageRows.Close()
 			}
 			listings = append(listings, l)
@@ -106,16 +101,14 @@ func listingsHandler(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(listings)
 
 	case http.MethodPost:
-		// Create a new listing from multipart form data.
 		if err := r.ParseMultipartForm(10 << 20); err != nil {
 			http.Error(w, "Unable to parse form data", http.StatusBadRequest)
 			return
 		}
 
-		userIDStr := r.FormValue("userId")
-		userID, err := strconv.Atoi(userIDStr)
-		if err != nil {
-			http.Error(w, "Invalid userId", http.StatusBadRequest)
+		userEmail := r.FormValue("userEmail")
+		if userEmail == "" {
+			http.Error(w, "Invalid userEmail", http.StatusBadRequest)
 			return
 		}
 		productName := r.FormValue("productName")
@@ -130,15 +123,14 @@ func listingsHandler(w http.ResponseWriter, r *http.Request) {
 
 		var listingID int
 		err = db.QueryRow(
-			"INSERT INTO listings(user_id, product_name, product_description, price, category, created_at, updated_at) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id",
-			userID, productName, productDescription, price, category, time.Now(), time.Now(),
+			"INSERT INTO listings(user_email, product_name, product_description, price, category, created_at, updated_at) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id",
+			userEmail, productName, productDescription, price, category, time.Now(), time.Now(),
 		).Scan(&listingID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		// Handle image uploads.
 		files := r.MultipartForm.File["images"]
 		for _, fileHeader := range files {
 			imageData, contentType, err := readImageData(fileHeader)
@@ -147,7 +139,6 @@ func listingsHandler(w http.ResponseWriter, r *http.Request) {
 				continue
 			}
 
-			// Validate image size (example: max 5MB)
 			if len(imageData) > 5<<20 {
 				log.Printf("Image too large: %s", fileHeader.Filename)
 				continue
@@ -155,9 +146,7 @@ func listingsHandler(w http.ResponseWriter, r *http.Request) {
 
 			_, err = db.Exec(
 				"INSERT INTO listing_images(listing_id, image_data, content_type) VALUES($1, $2, $3)",
-				listingID,
-				imageData,
-				contentType,
+				listingID, imageData, contentType,
 			)
 			if err != nil {
 				log.Printf("Error saving image record: %v", err)
@@ -177,14 +166,13 @@ func listingsHandler(w http.ResponseWriter, r *http.Request) {
 
 // userListingsHandler handles GET requests to fetch listings for the current user.
 func userListingsHandler(w http.ResponseWriter, r *http.Request) {
-	currentUserStr := r.URL.Query().Get("currentUser")
-	currentUser, err := strconv.Atoi(currentUserStr)
-	if err != nil || currentUser == 0 {
+	currentUserEmail := r.URL.Query().Get("currentUser")
+	if currentUserEmail == "" {
 		http.Error(w, "Invalid currentUser parameter", http.StatusBadRequest)
 		return
 	}
 
-	rows, err := db.Query("SELECT id, user_id, product_name, product_description, price, category, created_at, updated_at FROM listings WHERE user_id = $1", currentUser)
+	rows, err := db.Query("SELECT id, user_email, product_name, product_description, price, category, created_at, updated_at FROM listings WHERE user_email = $1", currentUserEmail)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -194,14 +182,11 @@ func userListingsHandler(w http.ResponseWriter, r *http.Request) {
 	var listings []Listing
 	for rows.Next() {
 		var l Listing
-		if err := rows.Scan(&l.ID, &l.UserID, &l.ProductName, &l.ProductDescription, &l.Price, &l.Category, &l.CreatedAt, &l.UpdatedAt); err != nil {
+		if err := rows.Scan(&l.ID, &l.UserEmail, &l.ProductName, &l.ProductDescription, &l.Price, &l.Category, &l.CreatedAt, &l.UpdatedAt); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		imageRows, err := db.Query(
-			"SELECT id, content_type FROM listing_images WHERE listing_id = $1", 
-			l.ID,
-		)
+		imageRows, err := db.Query("SELECT id, content_type FROM listing_images WHERE listing_id = $1", l.ID)
 		if err == nil {
 			var images []map[string]interface{}
 			for imageRows.Next() {
@@ -231,23 +216,20 @@ func editListingHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Expect form values for listingId and userId.
 	listingIDStr := r.FormValue("listingId")
 	listingID, err := strconv.Atoi(listingIDStr)
 	if err != nil {
 		http.Error(w, "Invalid listingId", http.StatusBadRequest)
 		return
 	}
-	currentUserStr := r.FormValue("userId")
-	currentUser, err := strconv.Atoi(currentUserStr)
-	if err != nil {
-		http.Error(w, "Invalid userId", http.StatusBadRequest)
+	currentUserEmail := r.FormValue("userEmail")
+	if currentUserEmail == "" {
+		http.Error(w, "Invalid userEmail", http.StatusBadRequest)
 		return
 	}
 
-	// Verify that the listing belongs to the current user.
-	var ownerID int
-	err = db.QueryRow("SELECT user_id FROM listings WHERE id = $1", listingID).Scan(&ownerID)
+	var ownerEmail string
+	err = db.QueryRow("SELECT user_email FROM listings WHERE id = $1", listingID).Scan(&ownerEmail)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			http.Error(w, "Listing not found", http.StatusNotFound)
@@ -256,7 +238,7 @@ func editListingHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	if ownerID != currentUser {
+	if ownerEmail != currentUserEmail {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
@@ -274,7 +256,6 @@ func editListingHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	category := r.FormValue("category")
 
-	// Dynamically build the UPDATEI do n statement.
 	updateQuery := "UPDATE listings SET "
 	params := []interface{}{}
 	paramIndex := 1
@@ -308,8 +289,8 @@ func editListingHandler(w http.ResponseWriter, r *http.Request) {
 	paramIndex++
 
 	updateQuery += strings.Join(updates, ", ")
-	updateQuery += fmt.Sprintf(" WHERE id = $%d AND user_id = $%d", paramIndex, paramIndex+1)
-	params = append(params, listingID, currentUser)
+	updateQuery += fmt.Sprintf(" WHERE id = $%d AND user_email = $%d", paramIndex, paramIndex+1)
+	params = append(params, listingID, currentUserEmail)
 
 	_, err = db.Exec(updateQuery, params...)
 	if err != nil {
@@ -333,15 +314,14 @@ func deleteListingHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid listingId", http.StatusBadRequest)
 		return
 	}
-	currentUserStr := r.URL.Query().Get("userId")
-	currentUser, err := strconv.Atoi(currentUserStr)
-	if err != nil {
-		http.Error(w, "Invalid userId", http.StatusBadRequest)
+	currentUserEmail := r.URL.Query().Get("userEmail")
+	if currentUserEmail == "" {
+		http.Error(w, "Invalid userEmail", http.StatusBadRequest)
 		return
 	}
 
-	var ownerID int
-	err = db.QueryRow("SELECT user_id FROM listings WHERE id = $1", listingID).Scan(&ownerID)
+	var ownerEmail string
+	err = db.QueryRow("SELECT user_email FROM listings WHERE id = $1", listingID).Scan(&ownerEmail)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			http.Error(w, "Listing not found", http.StatusNotFound)
@@ -350,20 +330,18 @@ func deleteListingHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	if ownerID != currentUser {
+	if ownerEmail != currentUserEmail {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
-	// First, delete any associated images.
 	_, err = db.Exec("DELETE FROM listing_images WHERE listing_id = $1", listingID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// Then delete the listing.
-	_, err = db.Exec("DELETE FROM listings WHERE id = $1 AND user_id = $2", listingID, currentUser)
+	_, err = db.Exec("DELETE FROM listings WHERE id = $1 AND user_email = $2", listingID, currentUserEmail)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -372,7 +350,7 @@ func deleteListingHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"message": "Listing deleted successfully"})
 }
 
-// readImageData reads the uploaded image into a byte slice
+// readImageData reads the uploaded image into a byte slice.
 func readImageData(fileHeader *multipart.FileHeader) ([]byte, string, error) {
 	file, err := fileHeader.Open()
 	if err != nil {
@@ -380,17 +358,16 @@ func readImageData(fileHeader *multipart.FileHeader) ([]byte, string, error) {
 	}
 	defer file.Close()
 
-	// Read entire file into byte slice
 	imageData, err := io.ReadAll(file)
 	if err != nil {
 		return nil, "", err
 	}
 
-	// Detect content type
 	contentType := http.DetectContentType(imageData)
 	return imageData, contentType, nil
 }
 
+// imageHandler serves image data from the database.
 func imageHandler(w http.ResponseWriter, r *http.Request) {
 	imageIDStr := r.URL.Query().Get("id")
 	imageID, err := strconv.Atoi(imageIDStr)
