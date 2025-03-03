@@ -16,13 +16,23 @@ interface AuthPayload {
   confirmPassword?: string;
 }
 
+interface Product {
+  name: string;
+  description: string;
+  price: number;
+  category: string;
+  images: File[];
+  id?: string;
+}
+
+
+
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   }
 });
-
 
 api.interceptors.request.use(config => {
   const sessionId = sessionStorage.getItem('sessionId');
@@ -63,9 +73,37 @@ export const authService = {
     } catch (error) {
       throw this.handleError(error);
     }
-  },
+  }, 
+  async createProduct(productData: Product): Promise<Product[]> {
+    try {
+      const formData = new FormData();
+      
+      // Append text fields
+      formData.append('name', productData.name);
+      formData.append('description', productData.description);
+      formData.append('price', productData.price.toString());
+      formData.append('category', productData.category);
 
-  handleError(error: unknown): Error {
+      // Append image files
+      productData.images.forEach((image, index) => {
+        formData.append(`images`, image);
+      });
+
+      const config = {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'X-Session-ID': sessionStorage.getItem('sessionId') || ''
+        }
+      };
+      console.log(formData)
+
+      const response = await api.post<Product[]>('/products', formData, config);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  },
+   handleError(error: unknown): Error {
     if (axios.isAxiosError(error)) {
       return new Error(error.response?.data || 'Authentication failed');
     }

@@ -2,6 +2,9 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Authentication from './authentication/Authentication';
 import Dashboard from './Dashboard';
 import ProtectedRoute from './ProtectedRoute';
+import Sell from './sell/Sell';
+
+
 
 function App() {
   return (
@@ -13,11 +16,12 @@ function App() {
          <Route
           path="/dashboard"
           element={
-            <ProtectedRoute>
+            // <ProtectedRoute>
               <Dashboard />
-            </ProtectedRoute>
+            /* </ProtectedRoute> */
           }
         /> 
+        <Route path="/sell" element={<Sell />} />
       </Routes>
     </Router>
   );

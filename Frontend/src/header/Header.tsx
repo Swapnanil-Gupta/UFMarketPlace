@@ -22,37 +22,52 @@ const Header: FC = () => {
     navigate('/login');
   };
 
+  const handleSell = (): void => {
+    navigate('/sell');
+  };
+
+  const handleDashboard = (): void => {
+    navigate('/dashboard');
+  };
+
   return (
     <header className="header-container">
       <div className="header-content">
         <h1 className="logo">
           <span className="logo-uf">UF</span>
-          <span className="logo-marketplace">Marketplace</span>
+          <span className="logo-marketplace" onClick={handleDashboard}>Marketplace</span>
         </h1>
-        
-        <div className="user-section">
+        <div className="header-actions">
           <button 
-            className="user-icon-btn" 
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            aria-label="User menu"
+            className="sell-button"
+            onClick={handleSell}
+            aria-label="Sell items"
           >
-            <FontAwesomeIcon 
-              icon={faUser} 
-              className={`user-icon ${isMenuOpen ? 'icon-active' : ''}`}
-            />
+            Sell
           </button>
-
-          <div className={`user-menu ${isMenuOpen ? 'active' : ''}`}>
-            <div className="user-info">
-              <p className="user-name">{name}</p>
-              <p className="user-email">{userEmail}</p>
-            </div>
+          <div className="user-section">
             <button 
-              className="logout-btn"
-              onClick={handleLogout}
+              className="user-icon-btn" 
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              aria-label="User menu"
             >
-              Logout
+              <FontAwesomeIcon 
+                icon={faUser} 
+                className={`user-icon ${isMenuOpen ? 'icon-active' : ''}`}
+              />
             </button>
+            <div className={`user-menu ${isMenuOpen ? 'active' : ''}`}>
+              <div className="user-info">
+                <p className="user-name">{name}</p>
+                <p className="user-email">{userEmail}</p>
+              </div>
+              <button 
+                className="logout-btn"
+                onClick={handleLogout}
+              >
+                Logout
+              </button>
+            </div>
           </div>
         </div>
       </div>

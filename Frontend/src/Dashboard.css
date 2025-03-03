@@ -1,0 +1,242 @@
+.dashboard-container {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 80px auto 0;
+  }
+  
+  .dashboard-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: #0021a5;
+  }
+  
+  .products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
+    padding: 1rem;
+  }
+  
+  .product-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.3s ease;
+    cursor: pointer;
+  }
+  
+  .product-card:hover {
+    transform: translateY(-5px);
+  }
+  
+  .product-image-container {
+    height: 250px;
+    background: #f8f9fa;
+    position: relative;
+  }
+  
+  .product-thumbnail {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .no-image-placeholder {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    font-size: 1.2rem;
+  }
+  
+  .product-info {
+    padding: 1.5rem;
+  }
+  
+  .price-category {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 1rem 0;
+  }
+  
+  .price {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #fa4616;
+  }
+  
+  .category {
+    background: #0021a5;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    text-transform: capitalize;
+  }
+  
+  .description {
+    color: #666;
+    line-height: 1.6;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .empty-state {
+    text-align: center;
+    padding: 4rem;
+    color: #666;
+    grid-column: 1 / -1;
+    font-size: 1.25rem;
+  }
+  
+  .product-modal {
+    width: 65%;
+    margin: -1rem auto;
+    border: none;
+    border-radius: 12px;
+    padding: 2rem;
+    max-width: 1000px;
+  }
+  
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+  }
+  
+  .modal-content {
+    position: relative;
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+  }
+  
+  .full-size-image {
+    width: 100%;
+    max-height: 60vh;
+    object-fit: contain;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+  }
+  
+  .close-button {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    font-size: 2rem;
+    cursor: pointer;
+    color: #666;
+    padding: 0 0.5rem;
+  }
+  
+  .close-button:hover {
+    color: #333;
+  }
+  
+  .product-details {
+    padding: 0 1rem;
+  }
+  
+  .product-details h2 {
+    margin-bottom: 1rem;
+    color: #0021a5;
+  }
+  
+  @media (max-width: 768px) {
+    .dashboard-container {
+      padding: 1rem;
+      margin-top: 60px;
+    }
+  
+    .products-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .product-modal {
+      padding: 1rem;
+    }
+    
+    .full-size-image {
+      max-height: 50vh;
+    }
+  }
+
+  /* Add these new styles */
+.carousel-container {
+  margin: 0 auto;
+  max-width: 800px;
+}
+
+.slide-container {
+  padding: 0 10px;
+}
+
+.carousel-image {
+  width: 100%;
+  height: 60vh;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+/* Customize slick arrows */
+.slick-prev:before,
+.slick-next:before {
+  color: #0021a5;
+  font-size: 30px;
+}
+
+.slick-prev {
+  left: -35px;
+}
+
+.slick-next {
+  right: -35px;
+}
+
+/* Customize slick dots */
+.slick-dots li button:before {
+  font-size: 12px;
+  color: #0021a5;
+}
+
+.slick-dots li.slick-active button:before {
+  color: #fa4616;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .slick-prev,
+  .slick-next {
+    display: none !important;
+  }
+  
+  .carousel-image {
+    height: 50vh;
+  }
+}
+
+/* Add these styles to remove the blue outline */
+.product-modal:focus {
+    outline: none !important;
+  }
+  
+  .modal-content:focus {
+    outline: none !important;
+  }
+  
+  /* If using keyboard navigation, preserve focus for accessibility */
+  .modal-content [tabindex]:focus-visible {
+    outline: 2px solid #0021a5;
+    outline-offset: 2px;
+  }
