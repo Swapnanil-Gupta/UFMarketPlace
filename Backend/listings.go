@@ -20,7 +20,8 @@ import (
 type Listing struct {
 	ID                 int                      `json:"id"`
 	UserID             int                      `json:"userId"`
-	UserName           string                   `json:"userName"` // New field for the username
+	UserName           string                   `json:"userName"`
+	UserEmail          string                   `json:"userEmail"`
 	ProductName        string                   `json:"productName"`
 	ProductDescription string                   `json:"productDescription"`
 	Price              float64                  `json:"price"`
@@ -78,7 +79,7 @@ func listingsHandler(w http.ResponseWriter, r *http.Request) {
 
 		// Join with users table to get the username
 		rows, err := db.Query(
-			"SELECT l.id, l.user_id, u.name, l.product_name, l.product_description, l.price, l.category, l.created_at, l.updated_at "+
+			"SELECT l.id, l.user_id, u.name, u.email, l.product_name, l.product_description, l.price, l.category, l.created_at, l.updated_at "+
 				"FROM listings l JOIN users u ON u.id = l.user_id WHERE l.user_id <> $1", currentUserID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -90,11 +91,15 @@ func listingsHandler(w http.ResponseWriter, r *http.Request) {
 		for rows.Next() {
 			var l Listing
 			var userName string
-			if err := rows.Scan(&l.ID, &l.UserID, &userName, &l.ProductName, &l.ProductDescription, &l.Price, &l.Category, &l.CreatedAt, &l.UpdatedAt); err != nil {
+			var userEmail string
+
+			if err := rows.Scan(&l.ID, &l.UserID, &userName, &userEmail, &l.ProductName, &l.ProductDescription, &l.Price, &l.Category, &l.CreatedAt, &l.UpdatedAt); err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 			l.UserName = userName
+			l.UserEmail = userEmail
+
 			// Fetch image data for listing.
 			imageRows, err := db.Query("SELECT id, image_data, content_type FROM listing_images WHERE listing_id = $1", l.ID)
 			if err == nil {
