@@ -27,9 +27,10 @@ export interface ProductRequest {
 }
 
 export interface ProductResponse {
-  id: string;       
-  name: string;
-  description: string;
+  id: string;   
+  userEmail: string,    
+  productName: string;
+  productDescription: string;
   price: string;     
   category: string;
   images: string[]; 
@@ -90,7 +91,7 @@ export const authService = {
   async createProduct(productData: ProductRequest): Promise<ProductResponse[]> {
     try {
       const formData = new FormData();
-      formData.append('productId', productData.id);
+      formData.append('listingId', productData.id);
       formData.append('productName', productData.name);
       formData.append('productDescription', productData.description);
       formData.append('price', productData.price.toString());
@@ -118,7 +119,7 @@ export const authService = {
     try {
       const formData = new FormData();
       
-      formData.append('productId', productData.id);
+      formData.append('listingId', productData.id);
       formData.append('productName', productData.name);
       formData.append('productDescription', productData.description);
       formData.append('price', productData.price.toString());
@@ -137,7 +138,7 @@ export const authService = {
       };
       console.log(formData)
 
-      const response = await api.put<ProductResponse[]>('/updateListing', formData, config);
+      const response = await api.put<ProductResponse[]>('/listing/updateListing', formData, config);
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -154,7 +155,7 @@ export const authService = {
   },
   async deleteListing(productId: string): Promise<ProductResponse[]> {
     try {
-      const response = await api.delete<ProductResponse[]>('/deleteListing?listingId='+productId+'&userEmail='+getUserName());
+      const response = await api.delete<ProductResponse[]>('/listing/deleteListing?listingId='+productId+'&userEmail='+getUserName());
       return response.data;
     } catch (error) {
       throw this.handleError(error);

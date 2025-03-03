@@ -9,28 +9,25 @@ import { authService, ProductRequest, ProductResponse } from '../AuthService';
 
 Modal.setAppElement('#root');
 
-
 interface Product {
   id: string;
   name: string;
   description: string;
   price: string;      
   category: string;
-  images: string[];   
+  images: string[];
 }
 
 const Sell: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-
   const [products, setProducts] = useState<Product[]>([]);
-
   const [productData, setProductData] = useState<{
-    id?: string;                       
+    id?: string;
     name: string;
     description: string;
-    price: string;                
+    price: string;
     category: string;
-    images: (File | string)[];
+    images: (File | string)[]; 
   }>({
     id: '',
     name: '',
@@ -58,40 +55,30 @@ const Sell: React.FC = () => {
     ]
   };
 
-  function base64ToFile(base64Data: string, filename: string): File {
-    const [meta, base64String] = base64Data.split(',');
-    const mime = meta.match(/:(.*?);/)?.[1] || 'application/octet-stream';
-    const binary = atob(base64String); // decode base64
-    const array = new Uint8Array(binary.length);
-  
-    for (let i = 0; i < binary.length; i++) {
-      array[i] = binary.charCodeAt(i);
-    }
-  
-    return new File([array], filename, { type: mime });
-  }
-
   useEffect(() => {
     const fetchListings = async () => {
       try {
+       
         const savedProducts = await authService.getListing();
         if (savedProducts) {
-
           const updatedProducts: Product[] = savedProducts.map((prod) => ({
-            id: prod.id,
-            name: prod.name,
-            description: prod.description,
-            price: prod.price,    
+            id: String(prod.id),
+            name: prod.productName,
+            description: prod.productDescription,
+            price: `${prod.price}$`,
             category: prod.category,
-            images: prod.images, 
+            images: prod.images.map((imgObj: any) =>
+              `data:${imgObj.contentType};base64,${imgObj.data}`
+            ),
           }));
+
           setProducts(updatedProducts);
         }
       } catch (error) {
         console.error('Error fetching listings:', error);
       }
     };
-  
+
     fetchListings();
   }, []);
 
@@ -104,15 +91,14 @@ const Sell: React.FC = () => {
       alert('Please enter a valid price');
       return;
     }
-    
 
     if (productData.id) {
-
+    
       const fileImages = productData.images.map((img, index) => {
         if (typeof img === 'string') {
           return base64ToFile(img, `existing-image-${index}.png`);
         } else {
-          return img;
+          return img; 
         }
       });
 
@@ -125,49 +111,61 @@ const Sell: React.FC = () => {
         images: fileImages,
       };
 
-      const responseProducts: ProductResponse[] = await authService.updateProduct(updateProductData);
+      try {
+        const responseProducts: ProductResponse[] =
+          await authService.updateProduct(updateProductData);
 
-      
-      const updatedProducts: Product[] = responseProducts.map((prod) => ({
-        id: prod.id,
-        name: prod.name,
-        description: prod.description,
-        price: prod.price,    
-        category: prod.category,
-        images: prod.images, 
-      }));
-      
-      setProducts(updatedProducts);
-    } 
+        const updatedProducts: Product[] = responseProducts.map((prod) => ({
+          id: String(prod.id),
+          name: prod.productName,
+          description: prod.productDescription,
+          price: `${prod.price}$`,
+          category: prod.category,
+          images: prod.images.map((imgObj: any) =>
+            `data:${imgObj.contentType};base64,${imgObj.data}`
+          ),
+        }));
+
+        setProducts(updatedProducts);
+      } catch (error) {
+        console.error('Error updating product:', error);
+      }
+    }
 
     else {
       try {
-        const fileImages = productData.images.filter((img) => img instanceof File) as File[];
+        const fileImages = productData.images.filter(
+          (img): img is File => img instanceof File
+        );
+
         const newProduct: ProductRequest = {
-          id: productData.id ? productData.id : '',
+          id: '', 
           name: productData.name,
           description: productData.description,
-          price: priceNumber, 
+          price: priceNumber,
           category: productData.category,
-          images: fileImages
+          images: fileImages,
         };
+
         const responseProducts = await authService.createProduct(newProduct);
 
         const newProducts: Product[] = responseProducts.map((prod) => ({
-          id: prod.id,
-          name: prod.name,
-          description: prod.description,
-          price: prod.price, 
+          id: String(prod.id),
+          name: prod.productName,
+          description: prod.productDescription,
+          price: `${prod.price}$`,
           category: prod.category,
-          images: prod.images,     
+          images: prod.images.map((imgObj: any) =>
+            `data:${imgObj.contentType};base64,${imgObj.data}`
+          ),
         }));
 
         setProducts(newProducts);
-
       } catch (error) {
         console.error('Error creating product:', error);
       }
     }
+
 
     setIsModalOpen(false);
     setProductData({
@@ -180,32 +178,41 @@ const Sell: React.FC = () => {
     });
   };
 
+ 
   const handleDelete = async (productId: string) => {
-    const res = await authService.deleteListing(productId);
-    const newProducts: Product[] = res.map((prod) => ({
-      id: prod.id,
-      name: prod.name,
-      description: prod.description,
-      price: prod.price, 
-      category: prod.category,
-      images: prod.images,     
-    }));
+    try {
+      const res = await authService.deleteListing(productId);
+      const newProducts: Product[] = res.map((prod: any) => ({
+        id: String(prod.id),
+        name: prod.productName,
+        description: prod.productDescription,
+        price: `${prod.price}$`,
+        category: prod.category,
+        images: prod.images.map((imgObj: any) =>
+          `data:${imgObj.contentType};base64,${imgObj.data}`
+        ),
+      }));
 
-    setProducts(newProducts);
+      setProducts(newProducts);
+    } catch (error) {
+      console.error('Error deleting product:', error);
+    }
   };
 
   const handleEdit = (product: Product) => {
+    const numericPrice = product.price.replace('$', '');
 
     setProductData({
       id: product.id,
       name: product.name,
       description: product.description,
-      price: product.price.replace('$', ''),
+      price: numericPrice,
       category: product.category,
-      images: product.images, 
+      images: product.images,
     });
     setIsModalOpen(true);
   };
+
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -217,13 +224,32 @@ const Sell: React.FC = () => {
     }
   };
 
-  // Remove image from the array
   const removeImage = (index: number) => {
     const newImages = productData.images.filter((_, i) => i !== index);
     setProductData((prev) => ({ ...prev, images: newImages }));
   };
 
-  // Card component for displaying a single product
+
+  function base64ToFile(base64Data: string, filename: string): File {
+    if (!base64Data.startsWith('data:')) {
+      console.warn('String does not look like base64 Data URL:', base64Data);
+      return new File([], filename);
+    }
+
+    const [header, base64String] = base64Data.split(',');
+    // parse out the mime, e.g. "image/png"
+    const mimeMatch = header.match(/data:(.*?);base64/);
+    const mime = mimeMatch ? mimeMatch[1] : 'application/octet-stream';
+
+    const binary = atob(base64String);
+    const array = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+      array[i] = binary.charCodeAt(i);
+    }
+    return new File([array], filename, { type: mime });
+  }
+
+
   const ProductCard: FC<{ product: Product }> = ({ product }) => {
     return (
       <div className="product-card">
@@ -304,7 +330,9 @@ const Sell: React.FC = () => {
           overlayClassName="modal-overlay"
           className="modal-content"
         >
-          <h2 className="listing">{productData.id ? 'Edit Listing' : 'Create New Listing'}</h2>
+          <h2 className="listing">
+            {productData.id ? 'Edit Listing' : 'Create New Listing'}
+          </h2>
           <form onSubmit={handleSubmit} className="product-form">
             <div className="form-group">
               <label>Product Name</label>
@@ -312,7 +340,9 @@ const Sell: React.FC = () => {
                 type="text"
                 required
                 value={productData.name}
-                onChange={(e) => setProductData({ ...productData, name: e.target.value })}
+                onChange={(e) =>
+                  setProductData({ ...productData, name: e.target.value })
+                }
               />
             </div>
 
@@ -321,7 +351,9 @@ const Sell: React.FC = () => {
               <textarea
                 required
                 value={productData.description}
-                onChange={(e) => setProductData({ ...productData, description: e.target.value })}
+                onChange={(e) =>
+                  setProductData({ ...productData, description: e.target.value })
+                }
               />
             </div>
 
@@ -332,7 +364,9 @@ const Sell: React.FC = () => {
                 required
                 step="0.01"
                 value={productData.price}
-                onChange={(e) => setProductData({ ...productData, price: e.target.value })}
+                onChange={(e) =>
+                  setProductData({ ...productData, price: e.target.value })
+                }
               />
             </div>
 
@@ -341,7 +375,9 @@ const Sell: React.FC = () => {
               <select
                 required
                 value={productData.category}
-                onChange={(e) => setProductData({ ...productData, category: e.target.value })}
+                onChange={(e) =>
+                  setProductData({ ...productData, category: e.target.value })
+                }
               >
                 <option value="">Select Category</option>
                 <option value="Electronics">Electronics</option>
@@ -361,7 +397,7 @@ const Sell: React.FC = () => {
               />
               <div className="image-previews">
                 {productData.images.map((img, index) => {
-                  // If it's already a string, use it directly; otherwise create an object URL
+            
                   const previewUrl =
                     typeof img === 'string' ? img : URL.createObjectURL(img);
                   return (
