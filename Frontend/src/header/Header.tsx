@@ -23,7 +23,7 @@ const Header: FC = () => {
   };
 
   const handleSell = (): void => {
-    navigate('/sell');
+    navigate('/listing');
   };
 
   const handleDashboard = (): void => {

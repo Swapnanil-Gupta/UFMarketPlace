@@ -16,12 +16,17 @@ function App() {
          <Route
           path="/dashboard"
           element={
-            // <ProtectedRoute>
+            <ProtectedRoute>
               <Dashboard />
-            /* </ProtectedRoute> */
+            </ProtectedRoute> 
           }
         /> 
-        <Route path="/sell" element={<Sell />} />
+        <Route path="/listing" element={
+          <ProtectedRoute>
+            <Sell />
+          </ProtectedRoute>
+          
+          } />
       </Routes>
     </Router>
   );

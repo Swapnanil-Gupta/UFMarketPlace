@@ -16,15 +16,24 @@ interface AuthPayload {
   confirmPassword?: string;
 }
 
-interface Product {
+
+export interface ProductRequest {
+  id: string,
   name: string;
   description: string;
-  price: number;
+  price: number;  
   category: string;
-  images: File[];
-  id?: string;
+  images: File[];    
 }
 
+export interface ProductResponse {
+  id: string;       
+  name: string;
+  description: string;
+  price: string;     
+  category: string;
+  images: string[]; 
+}
 
 
 const api = axios.create({
@@ -74,17 +83,44 @@ export const authService = {
       throw this.handleError(error);
     }
   }, 
-  async createProduct(productData: Product): Promise<Product[]> {
+  async createProduct(productData: ProductRequest): Promise<ProductResponse[]> {
+    try {
+      const formData = new FormData();
+      formData.append('productId', productData.id);
+      formData.append('productName', productData.name);
+      formData.append('productDescription', productData.description);
+      formData.append('price', productData.price.toString());
+      formData.append('category', productData.category);
+      formData.append('userId', sessionStorage.getItem('email') || '');
+      productData.images.forEach((image, index) => {
+        formData.append(`images`, image);
+      });
+
+      const config = {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'X-Session-ID': sessionStorage.getItem('sessionId') || ''
+        }
+      };
+      console.log("Formadat " + formData.get("userId"))
+
+      const response = await api.post<ProductResponse[]>('/listings', formData, config);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  },
+  async updateProduct(productData: ProductRequest): Promise<ProductResponse[]> {
     try {
       const formData = new FormData();
       
-      // Append text fields
-      formData.append('name', productData.name);
-      formData.append('description', productData.description);
+      formData.append('productId', productData.id);
+      formData.append('productName', productData.name);
+      formData.append('productDescription', productData.description);
       formData.append('price', productData.price.toString());
       formData.append('category', productData.category);
+      formData.append('userId', sessionStorage.getItem('email') || '');
 
-      // Append image files
       productData.images.forEach((image, index) => {
         formData.append(`images`, image);
       });
@@ -97,7 +133,7 @@ export const authService = {
       };
       console.log(formData)
 
-      const response = await api.post<Product[]>('/products', formData, config);
+      const response = await api.put<ProductResponse[]>('/product', formData, config);
       return response.data;
     } catch (error) {
       throw this.handleError(error);

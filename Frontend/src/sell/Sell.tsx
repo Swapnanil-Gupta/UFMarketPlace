@@ -5,29 +5,39 @@ import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import './Sell.css';
-import { authService } from '../AuthService';
+import { authService, ProductRequest, ProductResponse } from '../AuthService';
 
 Modal.setAppElement('#root');
+
 
 interface Product {
   id: string;
   name: string;
   description: string;
-  price: string;
+  price: string;      
   category: string;
-  images: string[];
+  images: string[];   
 }
 
 const Sell: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+
   const [products, setProducts] = useState<Product[]>([]);
-  const [productData, setProductData] = useState({
+
+  const [productData, setProductData] = useState<{
+    id?: string;                       
+    name: string;
+    description: string;
+    price: string;                
+    category: string;
+    images: (File | string)[];
+  }>({
     id: '',
     name: '',
     description: '',
     price: '',
     category: '',
-    images: [] as string[],
+    images: [],
   });
 
   const carouselSettings = {
@@ -48,6 +58,19 @@ const Sell: React.FC = () => {
     ]
   };
 
+  function base64ToFile(base64Data: string, filename: string): File {
+    const [meta, base64String] = base64Data.split(',');
+    const mime = meta.match(/:(.*?);/)?.[1] || 'application/octet-stream';
+    const binary = atob(base64String); // decode base64
+    const array = new Uint8Array(binary.length);
+  
+    for (let i = 0; i < binary.length; i++) {
+      array[i] = binary.charCodeAt(i);
+    }
+  
+    return new File([array], filename, { type: mime });
+  }
+
   useEffect(() => {
     const savedProducts = localStorage.getItem('products');
     if (savedProducts) {
@@ -57,81 +80,127 @@ const Sell: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const priceValue = parseFloat(productData.price).toFixed(2);
 
+    const priceNumber = parseFloat(productData.price);
+    if (isNaN(priceNumber)) {
+      alert('Please enter a valid price');
+      return;
+    }
+    
 
-    const newProduct: Product = {
+    if (productData.id) {
+
+      const fileImages = productData.images.map((img, index) => {
+        if (typeof img === 'string') {
+          // Convert base64 string to File
+          return base64ToFile(img, `existing-image-${index}.png`);
+        } else {
+          // Already a File
+          return img;
+        }
+      });
+
+      const updateProductData: ProductRequest = {
         id: productData.id,
         name: productData.name,
         description: productData.description,
-        price: productData.price,
+        price: priceNumber,
         category: productData.category,
-        images: productData.images,
-        // id not needed when creating a new product, 
-        // but you can include it if your service expects it
+        images: fileImages,
       };
 
-    let updatedProducts;
-    if (productData.id) {
-      updatedProducts = products.map(p => 
-        p.id === productData.id ? newProduct : p
-      );
-    } else {
-      updatedProducts = [...products, newProduct];
+      const responseProducts: ProductResponse[] = await authService.updateProduct(updateProductData);
+
+      
+      const updatedProducts: Product[] = responseProducts.map((prod) => ({
+        id: prod.id,
+        name: prod.name,
+        description: prod.description,
+        price: prod.price,    
+        category: prod.category,
+        images: prod.images, 
+      }));
+      
+      setProducts(updatedProducts);
+    } 
+
+    else {
+      try {
+        const fileImages = productData.images.filter((img) => img instanceof File) as File[];
+        const newProduct: ProductRequest = {
+          id: productData.id ? productData.id : '',
+          name: productData.name,
+          description: productData.description,
+          price: priceNumber, 
+          category: productData.category,
+          images: fileImages
+        };
+        const responseProducts = await authService.createProduct(newProduct);
+
+        const newProducts: Product[] = responseProducts.map((prod) => ({
+          id: prod.id,
+          name: prod.name,
+          description: prod.description,
+          price: prod.price, 
+          category: prod.category,
+          images: prod.images,     
+        }));
+
+        setProducts(newProducts);
+
+      } catch (error) {
+        console.error('Error creating product:', error);
+      }
     }
 
-    setProducts(updatedProducts);
-    localStorage.setItem('products', JSON.stringify(updatedProducts));
-    
+
     setIsModalOpen(false);
     setProductData({
+      id: '',
       name: '',
       description: '',
       price: '',
       category: '',
       images: [],
-      id: '',
     });
   };
 
   const handleDelete = (productId: string) => {
-    const updatedProducts = products.filter(p => p.id !== productId);
+    const updatedProducts = products.filter((p) => p.id !== productId);
     setProducts(updatedProducts);
     localStorage.setItem('products', JSON.stringify(updatedProducts));
   };
 
   const handleEdit = (product: Product) => {
+
     setProductData({
-      ...product,
-      price: product.price.replace('$', '')
+      id: product.id,
+      name: product.name,
+      description: product.description,
+      price: product.price.replace('$', ''),
+      category: product.category,
+      images: product.images, 
     });
     setIsModalOpen(true);
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      const files = Array.from(e.target.files);
-      const imagePromises = files.map(file => {
-        return new Promise<string>((resolve) => {
-          const reader = new FileReader();
-          reader.onload = (event) => resolve(event.target?.result as string);
-          reader.readAsDataURL(file);
-        });
-      });
-
-      const base64Images = await Promise.all(imagePromises);
-      setProductData(prev => ({
+      const incomingFiles = Array.from(e.target.files);
+      setProductData((prev) => ({
         ...prev,
-        images: [...prev.images, ...base64Images]
+        images: [...prev.images, ...incomingFiles],
       }));
     }
   };
 
+  // Remove image from the array
   const removeImage = (index: number) => {
     const newImages = productData.images.filter((_, i) => i !== index);
-    setProductData(prev => ({ ...prev, images: newImages }));
+    setProductData((prev) => ({ ...prev, images: newImages }));
   };
 
+  // Card component for displaying a single product
   const ProductCard: FC<{ product: Product }> = ({ product }) => {
     return (
       <div className="product-card">
@@ -140,11 +209,7 @@ const Sell: React.FC = () => {
             <Slider {...carouselSettings}>
               {product.images.map((img, index) => (
                 <div key={index}>
-                  <img
-                    src={img}
-                    alt={`Product ${index}`}
-                    className="product-image"
-                  />
+                  <img src={img} alt={`Product ${index}`} className="product-image" />
                 </div>
               ))}
             </Slider>
@@ -180,7 +245,7 @@ const Sell: React.FC = () => {
         
         <div className="listings-grid">
           {products.length > 0 ? (
-            products.map(product => (
+            products.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))
           ) : (
@@ -272,39 +337,44 @@ const Sell: React.FC = () => {
                 onChange={handleImageUpload}
               />
               <div className="image-previews">
-                {productData.images.map((img, index) => (
-                  <div key={index} className="image-preview-container">
-                    <img
-                      src={img}
-                      alt={`Preview ${index}`}
-                      className="preview-image"
-                    />
-                    <button 
-                      type="button"
-                      className="remove-image-btn"
-                      onClick={() => removeImage(index)}
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
+                {productData.images.map((img, index) => {
+                  // If it's already a string, use it directly; otherwise create an object URL
+                  const previewUrl =
+                    typeof img === 'string' ? img : URL.createObjectURL(img);
+                  return (
+                    <div key={index} className="image-preview-container">
+                      <img
+                        src={previewUrl}
+                        alt={`Preview ${index}`}
+                        className="preview-image"
+                      />
+                      <button
+                        type="button"
+                        className="remove-image-btn"
+                        onClick={() => removeImage(index)}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
             <div className="form-actions">
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className="cancel-btn"
                 onClick={() => {
-                    setIsModalOpen(false);
-                    setProductData({
-                      name: '',
-                      description: '',
-                      price: '',
-                      category: '',
-                      images: [],
-                      id: '',
-                    });
+                  setIsModalOpen(false);
+                  setProductData({
+                    id: '',
+                    name: '',
+                    description: '',
+                    price: '',
+                    category: '',
+                    images: [],
+                  });
                 }}
               >
                 Cancel
