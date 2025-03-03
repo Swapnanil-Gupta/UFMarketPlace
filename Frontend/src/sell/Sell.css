@@ -178,13 +178,14 @@
   z-index: 1001;
 }
 
-.modal-content {
+.sell-modal-content {
   background: white;
   padding: 2rem;
   border-radius: 12px;
   max-height: 90vh;
   overflow-y: auto;
   position: relative;
+  overflow-x: hidden;
 }
 
 .product-form {
@@ -274,6 +275,7 @@
   border-radius: 6px;
   cursor: pointer;
   transition: background 0.2s ease;
+  margin-top: 1rem;
 }
 
 .submit-btn {
@@ -350,7 +352,7 @@
     font-size: 1.5rem;
   }
 
-  .modal-content {
+  .sell-modal-content {
     width: 95%;
     padding: 1.5rem;
   }

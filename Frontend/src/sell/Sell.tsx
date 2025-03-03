@@ -327,7 +327,7 @@ const Sell: React.FC = () => {
             },
           }}
           overlayClassName="modal-overlay"
-          className="modal-content"
+          className="sell-modal-content"
         >
           <h2 className="listing">
             {productData.id ? 'Edit Listing' : 'Create New Listing'}

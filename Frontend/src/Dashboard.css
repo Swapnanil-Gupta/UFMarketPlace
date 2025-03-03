@@ -240,3 +240,117 @@
     outline: 2px solid #0021a5;
     outline-offset: 2px;
   }
+
+  /* Modal Styles */
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  max-height: 85vh !important;
+  overflow-y: auto;
+  position: relative;
+  padding: 2rem;
+}
+
+.scrollable-content {
+  max-height: 40vh;
+  overflow-y: auto;
+  padding-right: 1rem;
+  margin-top: 1rem;
+}
+
+/* Contact Information */
+.contact-info {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.contact-info h3 {
+  color: #2d3748;
+  margin-bottom: 1.5rem;
+  font-size: 1.25rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.user-details p {
+  margin: 1rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  font-size: 1rem;
+}
+
+.seller-name {
+  color: #2d3748;
+  font-weight: 500;
+}
+
+.seller-email a {
+  color: #667eea;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.seller-email a:hover {
+  color: #764ba2;
+  text-decoration: underline;
+}
+
+.icon {
+  font-size: 1.2rem;
+  width: 30px;
+  text-align: center;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
+}
+
+/* Close Button */
+.close-button {
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 2rem;
+  cursor: pointer;
+  color: #666;
+  z-index: 1000;
+}
+
+.close-button:hover {
+  color: #333;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .modal-content {
+    padding: 1rem;
+  }
+  
+  .scrollable-content {
+    max-height: 50vh;
+  }
+  
+  .carousel-image {
+    max-height: 40vh;
+  }
+}

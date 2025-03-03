@@ -34,6 +34,7 @@ export interface ProductResponse {
   productDescription: string;
   price: string;     
   category: string;
+  userName: string;
   images: string[]; 
 }
 
@@ -141,7 +142,6 @@ export const authService = {
           'userId': sessionStorage.getItem('userId')
         }
       };
-      console.log(formData)
 
       const response = await api.put<ProductResponse[]>('/listing/updateListing', formData, config);
       return this.getListing();

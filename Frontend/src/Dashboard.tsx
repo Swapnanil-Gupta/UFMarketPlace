@@ -14,6 +14,8 @@ interface Product {
   price: string;
   category: string;
   images: string[];
+  userName: string;
+  userEmail: string;
 }
 
 const Dashboard: React.FC = () => {
@@ -21,32 +23,31 @@ const Dashboard: React.FC = () => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-    useEffect(() => {
-      const fetchListings = async () => {
-        try {
-         
-          const savedProducts = await authService.getListingsByOtheruser();
-          if (savedProducts) {
-            const updatedProducts: Product[] = savedProducts.map((prod) => ({
-              id: String(prod.id),
-              name: prod.productName,
-              description: prod.productDescription,
-              price: `${prod.price}$`,
-              category: prod.category,
-              images: prod.images.map((imgObj: any) =>
-                `data:${imgObj.contentType};base64,${imgObj.data}`
-              ),
-            }));
-  
-            setProducts(updatedProducts);
-          }
-        } catch (error) {
-          console.error('Error fetching listings:', error);
+  useEffect(() => {
+    const fetchListings = async () => {
+      try {
+        const savedProducts = await authService.getListingsByOtheruser();
+        if (savedProducts) {
+          const updatedProducts: Product[] = savedProducts.map((prod) => ({
+            id: String(prod.id),
+            name: prod.productName,
+            description: prod.productDescription,
+            price: `${prod.price}$`,
+            category: prod.category,
+            images: prod.images.map((imgObj: any) =>
+              `data:${imgObj.contentType};base64,${imgObj.data}`
+            ),
+            userName: prod.userName,
+            userEmail: prod.userEmail
+          }));
+          setProducts(updatedProducts);
         }
-      };
-  
-      fetchListings();
-    }, []);
+      } catch (error) {
+        console.error('Error fetching listings:', error);
+      }
+    };
+    fetchListings();
+  }, []);
 
   const handleProductClick = (product: Product) => {
     setSelectedProduct(product);
@@ -109,6 +110,7 @@ const Dashboard: React.FC = () => {
           onRequestClose={() => setIsModalOpen(false)}
           className="product-modal"
           overlayClassName="modal-overlay"
+          ariaHideApp={false}
         >
           {selectedProduct && (
             <div className="modal-content">
@@ -143,7 +145,26 @@ const Dashboard: React.FC = () => {
                   <span className="price">{selectedProduct.price}</span>
                   <span className="category">{selectedProduct.category}</span>
                 </div>
-                <p className="description">{selectedProduct.description}</p>
+                
+                <div className="scrollable-content">
+                  <p className="description">{selectedProduct.description}</p>
+                  
+                  <div className="contact-info">
+                    <h3>Contact Seller</h3>
+                    <div className="user-details">
+                      <p className="seller-name">
+                        <span className="icon">👤</span>
+                        {selectedProduct.userName}
+                      </p>
+                      <p className="seller-email">
+                        <span className="icon">✉️</span>
+                        <a href={`mailto:${selectedProduct.userEmail}`}>
+                          {selectedProduct.userEmail}
+                        </a>
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           )}
