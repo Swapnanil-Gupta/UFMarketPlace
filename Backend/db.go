@@ -9,15 +9,15 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// Initialize database tables (users and sessions)
+// initDB creates the users and sessions tables in PostgreSQL.
 func initDB() error {
 	usersTable := `
 	CREATE TABLE IF NOT EXISTS users (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		name TEXT  NOT NULL,
+		id SERIAL PRIMARY KEY,
+		name TEXT NOT NULL,
 		email TEXT UNIQUE NOT NULL,
 		password TEXT NOT NULL,
-		created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+		created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 	);`
 	if _, err := db.Exec(usersTable); err != nil {
 		return fmt.Errorf("error creating users table: %v", err)
@@ -27,7 +27,7 @@ func initDB() error {
 	CREATE TABLE IF NOT EXISTS sessions (
 		session_id TEXT PRIMARY KEY,
 		user_id INTEGER NOT NULL,
-		expires_at INTEGER NOT NULL,
+		expires_at TIMESTAMPTZ NOT NULL,
 		FOREIGN KEY(user_id) REFERENCES users(id)
 	);`
 	if _, err := db.Exec(sessionsTable); err != nil {
@@ -36,14 +36,14 @@ func initDB() error {
 	return nil
 }
 
-// Create a new user with hashed password
+// CreateUser inserts a new user with a hashed password.
 func CreateUser(name, password, email string) error {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return err
 	}
 
-	stmt, err := db.Prepare("INSERT INTO users(name, email, password) VALUES(?, ?, ?)")
+	stmt, err := db.Prepare("INSERT INTO users(name, email, password) VALUES($1, $2, $3)")
 	if err != nil {
 		return err
 	}
@@ -53,16 +53,16 @@ func CreateUser(name, password, email string) error {
 	return err
 }
 
-// Retrieve user credentials by username
+// GetUser retrieves a user’s id, hashed password, and name by email.
 func GetUser(useremail string) (int, string, string, error) {
 	var userID int
 	var storedHash string
 	var name string
-	err := db.QueryRow("SELECT id, password, name FROM users WHERE email = ?", useremail).Scan(&userID, &storedHash, &name)
+	err := db.QueryRow("SELECT id, password, name FROM users WHERE email = $1", useremail).Scan(&userID, &storedHash, &name)
 	return userID, storedHash, name, err
 }
 
-// Generate a secure random session ID
+// generateSessionID creates a cryptographically secure random session token.
 func generateSessionID() (string, error) {
 	token := make([]byte, 32)
 	if _, err := rand.Read(token); err != nil {
@@ -71,15 +71,16 @@ func generateSessionID() (string, error) {
 	return base64.URLEncoding.EncodeToString(token), nil
 }
 
-// Create a new session for the user
+// CreateSession inserts a new session record for the given user.
 func CreateSession(userID int) (string, error) {
 	sessionID, err := generateSessionID()
 	if err != nil {
 		return "", err
 	}
-	expiresAt := time.Now().Add(24 * time.Hour).Unix()
+	// Set session expiration for 24 hours from now.
+	expiresAt := time.Now().Add(24 * time.Hour)
 
-	stmt, err := db.Prepare("INSERT INTO sessions(session_id, user_id, expires_at) VALUES(?, ?, ?)")
+	stmt, err := db.Prepare("INSERT INTO sessions(session_id, user_id, expires_at) VALUES($1, $2, $3)")
 	if err != nil {
 		return "", err
 	}

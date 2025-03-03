@@ -60,7 +60,7 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 
 func EmailExists(email string) (bool, error) {
 	var exists bool
-	query := "SELECT EXISTS(SELECT 1 FROM users WHERE email = ?)"
+	query := "SELECT EXISTS(SELECT 1 FROM users WHERE email = $1)"
 	err := db.QueryRow(query, email).Scan(&exists)
 	if err != nil {
 		return false, fmt.Errorf("error checking email existence: %w", err)

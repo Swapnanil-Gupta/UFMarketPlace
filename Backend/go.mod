@@ -1,9 +1,9 @@
-module your_module_name
+module module_postgres
 
 go 1.23.6
 
 require (
-	github.com/mattn/go-sqlite3 v1.14.24 // indirect
-	github.com/rs/cors v1.11.1 // indirect
-	golang.org/x/crypto v0.33.0 // indirect
+	github.com/lib/pq v1.10.9
+	github.com/rs/cors v1.11.1
+	golang.org/x/crypto v0.33.0
 )
