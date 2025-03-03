@@ -7,6 +7,7 @@ interface AuthResponse {
   sessionId: string;
   name: string;
   email: string;
+  userId: string;
 }
 
 interface AuthPayload {
@@ -52,6 +53,7 @@ api.interceptors.request.use(config => {
   const sessionId = sessionStorage.getItem('sessionId');
   if (sessionId) {
     config.headers['X-Session-ID'] = sessionId;
+    config.headers['userId'] = sessionStorage.getItem('userId');
   }
   return config;
 });
@@ -67,6 +69,7 @@ export const authService = {
       sessionStorage.setItem('sessionId', response.data.sessionId);
       sessionStorage.setItem('name', response.data.name);
       sessionStorage.setItem('email', response.data.email);
+      sessionStorage.setItem('userId', response.data.userId);
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -104,7 +107,8 @@ export const authService = {
       const config = {
         headers: {
           'Content-Type': 'multipart/form-data',
-          'X-Session-ID': sessionStorage.getItem('sessionId') || ''
+          'X-Session-ID': sessionStorage.getItem('sessionId') || '',
+          'userId': sessionStorage.getItem('userId')
         }
       };
       console.log("Formadat " + formData.get("userId"))
@@ -133,13 +137,14 @@ export const authService = {
       const config = {
         headers: {
           'Content-Type': 'multipart/form-data',
-          'X-Session-ID': sessionStorage.getItem('sessionId') || ''
+          'X-Session-ID': sessionStorage.getItem('sessionId') || '',
+          'userId': sessionStorage.getItem('userId')
         }
       };
       console.log(formData)
 
       const response = await api.put<ProductResponse[]>('/listing/updateListing', formData, config);
-      return response.data;
+      return this.getListing();
     } catch (error) {
       throw this.handleError(error);
     }
@@ -147,7 +152,17 @@ export const authService = {
   async getListing(): Promise<ProductResponse[]> {
     try {
 
-      const response = await api.get<ProductResponse[]>('/listings?userEmail='+getUserName());
+      const response = await api.get<ProductResponse[]>('/listings/user');
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+  ,
+  async getListingsByOtheruser(): Promise<ProductResponse[]> {
+    try {
+
+      const response = await api.get<ProductResponse[]>('/listings');
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -156,7 +171,7 @@ export const authService = {
   async deleteListing(productId: string): Promise<ProductResponse[]> {
     try {
       const response = await api.delete<ProductResponse[]>('/listing/deleteListing?listingId='+productId+'&userEmail='+getUserName());
-      return response.data;
+      return this.getListing();
     } catch (error) {
       throw this.handleError(error);
     }

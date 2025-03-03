@@ -7,6 +7,10 @@
   margin-right: auto;
 }
 
+.listing {
+  margin-top: -1rem;
+}
+
 .listings-header {
   color: black;
   margin-bottom: 2rem;

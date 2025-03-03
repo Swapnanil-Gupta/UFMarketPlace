@@ -5,6 +5,7 @@ import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import './Dashboard.css';
+import { authService } from './AuthService';
 
 interface Product {
   id: string;
@@ -20,12 +21,32 @@ const Dashboard: React.FC = () => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  useEffect(() => {
-    const savedProducts = localStorage.getItem('products');
-    if (savedProducts) {
-      setProducts(JSON.parse(savedProducts));
-    }
-  }, []);
+    useEffect(() => {
+      const fetchListings = async () => {
+        try {
+         
+          const savedProducts = await authService.getListingsByOtheruser();
+          if (savedProducts) {
+            const updatedProducts: Product[] = savedProducts.map((prod) => ({
+              id: String(prod.id),
+              name: prod.productName,
+              description: prod.productDescription,
+              price: `${prod.price}$`,
+              category: prod.category,
+              images: prod.images.map((imgObj: any) =>
+                `data:${imgObj.contentType};base64,${imgObj.data}`
+              ),
+            }));
+  
+            setProducts(updatedProducts);
+          }
+        } catch (error) {
+          console.error('Error fetching listings:', error);
+        }
+      };
+  
+      fetchListings();
+    }, []);
 
   const handleProductClick = (product: Product) => {
     setSelectedProduct(product);

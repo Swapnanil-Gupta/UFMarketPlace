@@ -112,9 +112,8 @@ const Sell: React.FC = () => {
       };
 
       try {
-        const responseProducts: ProductResponse[] =
-          await authService.updateProduct(updateProductData);
-
+        
+        const responseProducts: ProductResponse[] = await authService.updateProduct(updateProductData);
         const updatedProducts: Product[] = responseProducts.map((prod) => ({
           id: String(prod.id),
           name: prod.productName,
@@ -384,6 +383,21 @@ const Sell: React.FC = () => {
                 <option value="Books">Books</option>
                 <option value="Furniture">Furniture</option>
                 <option value="Clothing">Clothing</option>
+                <option value="Beauty and Personal Care">Beauty and Personal Care</option>
+                <option value="Sports and Fitness">Sports and Fitness</option>
+                <option value="Toys and Games">Toys and Games</option>
+                <option value="Home and Kitchen">Home and Kitchen</option>
+                <option value="Health and Wellness">Health and Wellness</option>
+                <option value="Baby Products">Baby Products</option>
+                <option value="Pet Supplies">Pet Supplies</option>
+                <option value="Food and Beverages">Food and Beverages</option>
+                <option value="Automotive">Automotive</option>
+                <option value="DIY and Hardware">DIY and Hardware</option>
+                <option value="Arts and Crafts">Arts and Crafts</option>
+                <option value="Office Supplies">Office Supplies</option>
+                <option value="Music and Instruments">Music and Instruments</option>
+                <option value="Garden and Outdoor">Garden and Outdoor</option>
+
               </select>
             </div>
 
