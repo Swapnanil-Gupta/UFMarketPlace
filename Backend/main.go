@@ -15,7 +15,7 @@ var db *sql.DB
 func main() {
 	var err error
 
-	// Set up CORS middleware
+	// Set up CORS middleware.
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:*"}, // For Frontend
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
@@ -36,7 +36,7 @@ func main() {
 	}
 	defer db.Close()
 
-	// Initialize database tables
+	// Initialize database tables.
 	if err := initDB(); err != nil {
 		log.Fatalf("Failed to initialize database: %v", err)
 	}
@@ -50,8 +50,8 @@ func main() {
 	router := http.NewServeMux()
 	router.HandleFunc("/signup", signupHandler)
 	router.HandleFunc("/login", loginHandler)
-	router.HandleFunc("/listings", listingsHandler)           // GET (all listings except current user) & POST (create new listing)
-	router.HandleFunc("/listings/user", userListingsHandler) // GET (listings for current user)
+	router.HandleFunc("/listings", listingsHandler)              // GET (all listings except current user) & POST (create new listing)
+	router.HandleFunc("/listings/user", userListingsHandler)       // GET (listings for current user)
 	router.HandleFunc("/listing/updateListing", editListingHandler)   // PUT (edit listing)
 	router.HandleFunc("/listing/deleteListing", deleteListingHandler) // DELETE (delete listing)
 	// router.HandleFunc("/image", imageHandler)                  // GET (serve image)

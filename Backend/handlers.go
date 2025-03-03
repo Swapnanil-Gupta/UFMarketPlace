@@ -49,13 +49,18 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := CreateUser(creds.Name, creds.Password, creds.Email); err != nil {
+	// CreateUser returns the new user's id.
+	userID, err := CreateUser(creds.Name, creds.Password, creds.Email)
+	if err != nil {
 		http.Error(w, fmt.Sprintf("Could not register user: %v", err), http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{"message": "User registered successfully"})
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"message": "User registered successfully",
+		"userId":  userID,
+	})
 }
 
 // EmailExists checks if an email already exists in the users table.
@@ -87,7 +92,8 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	storedHash, name, err := GetUserPasswordAndName(creds.Email)
+	// GetUserByEmail returns the user's id, stored hash, and name.
+	userID, storedHash, name, err := GetUserByEmail(creds.Email)
 	if err != nil {
 		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
 		return
@@ -98,16 +104,17 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sessionID, err := CreateSession(creds.Email)
+	sessionID, err := CreateSession(userID)
 	if err != nil {
 		http.Error(w, "Error creating session", http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{
+	json.NewEncoder(w).Encode(map[string]interface{}{
 		"sessionId": sessionID,
 		"name":      name,
 		"email":     creds.Email,
+		"userId":    userID,
 	})
 }
