@@ -21,7 +21,6 @@
 
 21. **US-021**: As a user, I want smooth image carousel navigation to browse product photos
 22. **US-022**: As a user, I want scrollable modal content to view long descriptions comfortably
-23. **US-023**: As a user, I want animated form interactions to enjoy the submission process
 
 ---
 
@@ -55,10 +54,7 @@
 ## Next Frontend Priorities
 
 1. Add search/filter functionality for products
-2. Implement favoriting/bookmarking system
-3. Create user profile management interface
-4. Add loading skeletons for images
-5. Develop drag-and-drop image upload
+2. Create user profile management interface
 
 ---
 
