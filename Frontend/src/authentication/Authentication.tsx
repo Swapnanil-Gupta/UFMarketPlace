@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
-import { useSpring, animated } from '@react-spring/web';
-import { useLocation, Link, useNavigate } from 'react-router-dom';
-import './Authentication.css';
-import { authService } from '../AuthService';
+import { useState, useEffect } from "react";
+import { useSpring, animated } from "@react-spring/web";
+import { useLocation, Link, useNavigate } from "react-router-dom";
+import "./Authentication.css";
+import { authService } from "../AuthService";
 
 interface AnimatedInputProps {
   label: string;
@@ -11,29 +11,39 @@ interface AnimatedInputProps {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-const AnimatedInput: React.FC<AnimatedInputProps> = ({ label, type = 'text', value, onChange }) => {
+const AnimatedInput: React.FC<AnimatedInputProps> = ({
+  label,
+  type = "text",
+  value,
+  onChange,
+}) => {
   const [focused, setFocused] = useState(false);
   const labelAnim = useSpring({
-    transform: focused || value ? 'translateY(-25px) scale(0.8)' : 'translateY(0) scale(1)',
-    color: focused ? '#4a5568' : '#718096',
+    transform:
+      focused || value
+        ? "translateY(-25px) scale(0.8)"
+        : "translateY(0) scale(1)",
+    color: focused ? "#4a5568" : "#718096",
   });
 
   return (
     <div className="input-container">
-      <animated.label style={labelAnim}>{label}</animated.label>
-      <input
-        type={type}
-        value={value}
-        onChange={onChange}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-      />
+      <animated.label style={labelAnim}>
+        {label}
+        <input
+          type={type}
+          value={value}
+          onChange={onChange}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+        />
+      </animated.label>
     </div>
   );
 };
 
 interface FormData {
-  name: string,
+  name: string;
   email: string;
   password: string;
   confirmPassword: string;
@@ -42,45 +52,44 @@ interface FormData {
 const Authentication: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const isLogin = location.pathname === '/login';
-  
+  const isLogin = location.pathname === "/login";
+
   const [formData, setFormData] = useState<FormData>({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Clear form when switching between login/signup
   useEffect(() => {
-    setFormData({ name: '', email: '', password: '', confirmPassword: '' });
+    setFormData({ name: "", email: "", password: "", confirmPassword: "" });
     setError(null);
     setLoading(false);
   }, [location.pathname]);
 
   const formAnimation = useSpring({
     opacity: 1,
-    transform: 'translateY(0)',
-    from: { opacity: 0, transform: 'translateY(40px)' },
+    transform: "translateY(0)",
+    from: { opacity: 0, transform: "translateY(40px)" },
   });
 
   const underlineAnimation = useSpring({
-    left: isLogin ? '0%' : '50%',
-    width: '50%',
+    left: isLogin ? "0%" : "50%",
+    width: "50%",
   });
 
   const isFormValid = () => {
-    
     if (isLogin) {
-      return formData.email.trim() !== '' && formData.password.trim() !== '';
+      return formData.email.trim() !== "" && formData.password.trim() !== "";
     }
     return (
-      formData.name.trim() !== '' &&
-      formData.email.trim() !== '' &&
-      formData.password.trim() !== '' &&
-      formData.confirmPassword.trim() !== ''
+      formData.name.trim() !== "" &&
+      formData.email.trim() !== "" &&
+      formData.password.trim() !== "" &&
+      formData.confirmPassword.trim() !== ""
     );
   };
 
@@ -90,34 +99,41 @@ const Authentication: React.FC = () => {
     setError(null);
 
     try {
-      if(!formData.email.includes("ufl.edu")) {
-        throw new Error('Only UF email is allowed');
+      if (!formData.email.includes("ufl.edu")) {
+        throw new Error("Only UF email is allowed");
       }
       if (!isLogin && formData.password !== formData.confirmPassword) {
-        throw new Error('Passwords do not match');
+        throw new Error("Passwords do not match");
       }
-
+      sessionStorage.setItem("email", formData.email);
       if (isLogin) {
         await authService.login({
           name: formData.name,
           email: formData.email,
-          password: formData.password
+          password: formData.password,
         });
-        navigate('/dashboard');
+        navigate("/dashboard");
       } else {
         await authService.signup({
           name: formData.name,
           email: formData.email,
           password: formData.password,
-          confirmPassword: formData.confirmPassword
+          confirmPassword: formData.confirmPassword,
         });
-        navigate('/login');
+        navigate("/verify-otp");
       }
     } catch (err) {
       if (err instanceof Error) {
-        setError(err.message);
+        if (err.message.includes("Email not verified. Verify Email to login")) {
+          setError("Email not verified. Redirecting to Email verification...");
+          setTimeout(() => {
+            navigate("/verify-otp");
+          }, 2500);
+        } else {
+          setError(err.message);
+        }
       } else {
-        setError('An unexpected error occurred');
+        setError("An unexpected error occurred");
       }
     } finally {
       setLoading(false);
@@ -129,28 +145,32 @@ const Authentication: React.FC = () => {
       <animated.form style={formAnimation} onSubmit={handleSubmit}>
         <div className="form-header">
           <div className="tabs">
-            <Link to="/login" className={`tab ${isLogin ? 'active' : ''}`}>
+            <Link
+              to="/login"
+              className={`tab ${isLogin ? "active" : ""}`}
+              data-testid="login_link"
+            >
               Login
             </Link>
-            <Link to="/signup" className={`tab ${!isLogin ? 'active' : ''}`}>
+            <Link
+              to="/signup"
+              className={`tab ${!isLogin ? "active" : ""}`}
+              data-testid="signup_link"
+            >
               Sign Up
             </Link>
             <animated.div className="underline" style={underlineAnimation} />
           </div>
         </div>
 
-        {error && (
-          <div className="error-message">
-            {error}
-          </div>
+        {error && <div className="error-message">{error}</div>}
+        {!isLogin && (
+          <AnimatedInput
+            label="Name"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          />
         )}
-      {!isLogin && (
-      <AnimatedInput
-          label="Name"
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-        />
-      )}
         <AnimatedInput
           label="Email"
           value={formData.email}
@@ -161,7 +181,9 @@ const Authentication: React.FC = () => {
           label="Password"
           type="password"
           value={formData.password}
-          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+          onChange={(e) =>
+            setFormData({ ...formData, password: e.target.value })
+          }
         />
 
         {!isLogin && (
@@ -169,22 +191,25 @@ const Authentication: React.FC = () => {
             label="Confirm Password"
             type="password"
             value={formData.confirmPassword}
-            onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, confirmPassword: e.target.value })
+            }
           />
         )}
 
-        <button 
-          type="submit" 
+        <button
+          type="submit"
           className="submit-btn"
           disabled={loading || !isFormValid()}
           style={{
-            background: loading || !isFormValid() 
-              ? 'linear-gradient(45deg, #cccccc, #999999)'
-              : 'linear-gradient(45deg, #667eea, #764ba2)',
-            cursor: loading || !isFormValid() ? 'not-allowed' : 'pointer'
+            background:
+              loading || !isFormValid()
+                ? "linear-gradient(45deg, #cccccc, #999999)"
+                : "linear-gradient(45deg, #667eea, #764ba2)",
+            cursor: loading || !isFormValid() ? "not-allowed" : "pointer",
           }}
         >
-          {loading ? 'Processing...' : isLogin ? 'Login' : 'Sign Up'}
+          {loading ? "Processing..." : isLogin ? "Login" : "Sign Up"}
         </button>
       </animated.form>
     </div>

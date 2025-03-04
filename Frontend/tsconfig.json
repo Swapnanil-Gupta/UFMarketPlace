@@ -14,8 +14,14 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "types": ["node", "cypress", "jest"]
   },
-  "include": ["src"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "include": ["src", "cypress/e2e/**/*.cy.ts"],
+  "references": [{ "path": "./tsconfig.node.json" }],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build"
+  ]
 }

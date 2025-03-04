@@ -46,7 +46,7 @@ const api = axios.create({
   }
 });
 
-function getUserName() {
+function getEmail() {
   return sessionStorage.getItem("email") || '';
 }
 
@@ -168,14 +168,34 @@ export const authService = {
       throw this.handleError(error);
     }
   },
-  async deleteListing(productId: string): Promise<ProductResponse[]> {
+  async deleteListing(productId: string): Promise<any> {
     try {
-      const response = await api.delete<ProductResponse[]>('/listing/deleteListing?listingId='+productId+'&userEmail='+getUserName());
+      const response = await api.delete<any>('/listing/deleteListing?listingId='+productId+'&userEmail='+getEmail());
       return this.getListing();
     } catch (error) {
       throw this.handleError(error);
     }
-  },
+  }, async sendEmailVerificationCode(): Promise<any> {
+    try {
+      const response = await api.post<any>('/sendEmailVerificationCode', {
+        email: getEmail()
+      });
+      return response.data
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }, async verifyEmailVerificationCode(code: string): Promise<any> {
+    try {
+      const response = await api.post<any>('/verifyEmailVerificationCode', {
+        email: getEmail(),
+        code: code
+      });
+      return response.data
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+  ,
    handleError(error: unknown): Error {
     if (axios.isAxiosError(error)) {
       return new Error(error.response?.data || 'Authentication failed');
