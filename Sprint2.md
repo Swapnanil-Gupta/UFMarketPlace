@@ -618,3 +618,401 @@ This document lists the unit tests for the backend of the application. Each test
   - **Expected Output**: HTTP 400 Bad Request with `"Invalid userId header\n"`
   - **Mock**: No database interaction due to invalid header value.
 
+---
+
+# Cypress Test Documentation
+
+This document outlines the Cypress tests for the authentication page of the web application. Each test is designed to validate specific user interactions and expected behaviors in the authentication process.
+
+---
+
+## **Authentication Page Tests**
+
+### **1. `Login Form Visibility`**
+
+- **Test Case**: **Displays the Login Form by Default**
+  
+  - **Description**: This test ensures that the login form is displayed by default when visiting the login page.
+  - **Input**: Visiting the `/login` page.
+  - **Expected Output**: The login tab should be active, and the form should contain two input fields (email and password).
+  - **Steps**:
+    - Visit the login page at `http://localhost:5173/login`.
+    - Verify that the login tab is active and contains the text "Login".
+    - Check that there are exactly two input fields.
+
+---
+
+### **2. `Tab Switching`**
+
+- **Test Case**: **Can Switch Between Login and Sign Up Tabs**
+
+  - **Description**: This test ensures that the user can switch between the login and sign-up tabs.
+  - **Input**: Clicking the "Sign Up" tab.
+  - **Expected Output**: The sign-up tab becomes active, and the form contains four input fields (name, email, password, confirm password).
+  - **Steps**:
+    - Visit the login page at `http://localhost:5173/login`.
+    - Click on the "Sign Up" tab.
+    - Verify that the active tab contains "Sign Up".
+    - Check that there are exactly four input fields.
+
+---
+
+### **3. `Login Validation`**
+
+- **Test Case**: **Shows Error for Invalid Email Format on Login**
+
+  - **Description**: This test checks that the login form shows an error if the entered email is not a UF email address.
+  - **Input**: Entering an invalid email format and a valid password.
+  - **Expected Output**: The form should display an error message saying "Only UF email is allowed".
+  - **Steps**:
+    - Enter an invalid email (e.g., `test@example.com`) in the email field.
+    - Enter a valid password (e.g., `dummyPassword`).
+    - Click the submit button.
+    - Verify that the error message "Only UF email is allowed" is displayed.
+
+---
+
+### **4. `Sign-Up Validation`**
+
+- **Test Case**: **Shows Error When Passwords Do Not Match on Sign Up**
+
+  - **Description**: This test checks that an error is displayed if the passwords entered during sign-up do not match.
+  - **Input**: Entering a mismatched password and confirm password on the sign-up form.
+  - **Expected Output**: The form should display an error message saying "Passwords do not match".
+  - **Steps**:
+    - Click on the "Sign Up" tab.
+    - Enter a name, email (e.g., `test@ufl.edu`), password (e.g., `password123`), and a different confirm password (e.g., `differentPassword`).
+    - Click the submit button.
+    - Verify that the error message "Passwords do not match" is displayed.
+
+---
+
+### **5. `Login Success`**
+
+- **Test Case**: **Redirects to Dashboard on Successful Login**
+
+  - **Description**: This test checks that the user is redirected to the `/dashboard` URL after a successful login.
+  - **Input**: Entering a valid UF email and password.
+  - **Expected Output**: The user should be redirected to `/dashboard`.
+  - **Steps**:
+    - Enter a valid email (e.g., `dineshramdanaraj@ufl.edu`) in the email field.
+    - Enter a valid password (e.g., `password123`) in the password field.
+    - Click the submit button.
+    - Verify that the URL includes `/dashboard`.
+
+---
+
+### **6. `Sign-Up Success`**
+
+- **Test Case**: **Redirects to Verify OTP Page on Successful Sign-Up**
+
+  - **Description**: This test ensures that after a successful sign-up, the user is redirected to the `/verify-otp` page.
+  - **Input**: Entering valid name, email (e.g., randomly generated `username@ufl.edu`), and matching passwords.
+  - **Expected Output**: The user should be redirected to `/verify-otp`.
+  - **Steps**:
+    - Click on the "Sign Up" tab.
+    - Enter a valid name (e.g., `Test User`).
+    - Enter a valid email (e.g., `username@ufl.edu`).
+    - Enter the same password (e.g., `password123`) for both the password and confirm password fields.
+    - Click the submit button.
+    - Verify that the URL includes `/verify-otp`.
+
+---
+
+# **Authentication Component Unit Tests**
+
+This document lists the unit tests for the `Authentication` component. Each test case verifies different functionality such as rendering, input validation, and integration with the authentication service.
+
+---
+
+## **Test Cases**
+
+### **1. Render Login Tab by Default**
+
+- **Test Case**: Renders the Login tab when the path is `/login`.
+- **Description**: Verifies that the Login tab is active and that the form contains the necessary fields for email and password.
+- **Expected Output**:
+  - The Login tab should have the class `active`.
+  - The `Email` and `Password` fields should be displayed.
+  - The `Name` field should not be visible.
+  - The `Login` button should be disabled initially.
+- **Mock**: N/A
+
+---
+
+### **2. Render Sign Up Tab When Path is `/signup`**
+
+- **Test Case**: Renders the Sign Up tab when the path is `/signup`.
+- **Description**: Verifies that the Sign Up tab is active and the form contains fields for Name, Email, Password, and Confirm Password.
+- **Expected Output**:
+  - The Sign Up tab should have the class `active`.
+  - The `Name`, `Email`, `Password`, and `Confirm Password` fields should be visible.
+- **Mock**: N/A
+
+---
+
+### **3. Display Error for Non-UF Email**
+
+- **Test Case**: Displays an error if the email is not a UF email (missing "ufl.edu") during login.
+- **Description**: Verifies that an error message is shown if a non-UF email is provided.
+- **Input**: Email `test@gmail.com` and password `SomePass123`.
+- **Expected Output**:
+  - Error message: `Only UF email is allowed`.
+  - The login button should be enabled.
+  - No navigation should happen.
+- **Mock**: `authService.login` mocked to reject with an error `"Only UF email is allowed"`.
+
+---
+
+### **4. Display Error for Mismatched Passwords During Sign Up**
+
+- **Test Case**: Displays an error if the passwords do not match during sign up.
+- **Description**: Verifies that an error message is shown when the password and confirm password fields do not match.
+- **Input**: Name `John Doe`, Email `john@ufl.edu`, Password `password1`, Confirm Password `password2`.
+- **Expected Output**:
+  - Error message: `Passwords do not match`.
+  - No navigation should happen.
+- **Mock**: N/A
+
+---
+
+### **5. Successful Login with authService**
+
+- **Test Case**: Calls `authService.login` and navigates to `/dashboard` on successful login.
+- **Description**: Verifies that `authService.login` is called with correct credentials and that the user is redirected to `/dashboard`.
+- **Input**: Email `example@ufl.edu` and password `TestPassword`.
+- **Expected Output**:
+  - `authService.login` should be called with the correct arguments.
+  - The email should be stored in `sessionStorage`.
+  - Navigation should happen to `/dashboard`.
+- **Mock**: `authService.login` mocked to resolve successfully.
+
+---
+
+### **6. Successful Signup with authService**
+
+- **Test Case**: Calls `authService.signup` and navigates to `/verify-otp` on successful signup.
+- **Description**: Verifies that `authService.signup` is called with the correct details and that the user is redirected to `/verify-otp`.
+- **Input**: Name `Jane Doe`, Email `jane@ufl.edu`, Password `abc1234`, Confirm Password `abc1234`.
+- **Expected Output**:
+  - `authService.signup` should be called with the correct arguments.
+  - The email should be stored in `sessionStorage`.
+  - Navigation should happen to `/verify-otp`.
+- **Mock**: `authService.signup` mocked to resolve successfully.
+
+---
+
+### **7. Show "Email Not Verified" Message on Login**
+
+- **Test Case**: Shows an "Email not verified" message and redirects to `/verify-otp` if thrown by `authService` during login.
+- **Description**: Verifies that when `authService.login` rejects with an "Email not verified" error, the user is redirected to `/verify-otp`.
+- **Input**: Email `example@ufl.edu` and password `TestPassword`.
+- **Expected Output**:
+  - Error message: `Email not verified. Verify Email to login`.
+  - Navigation should happen to `/verify-otp`.
+- **Mock**: `authService.login` mocked to reject with an error `"Email not verified. Verify Email to login"`.
+
+---
+
+## **Dependencies**
+
+- `@testing-library/react`: For rendering components and interacting with the DOM.
+- `react-router-dom`: For routing and navigating between different routes.
+- `jest`: For mocking services and functions like `authService` and `useNavigate`.
+
+---
+
+## **Mocked Services**
+
+- **`authService`**: Mocked to simulate the `login` and `signup` functions.
+- **`useNavigate`**: Mocked to simulate navigation when a successful login or signup occurs.
+
+---
+
+# OTPVerification Component Test Documentation
+
+This file contains unit tests for the `OTPVerification` component. The component is responsible for verifying the OTP (One-Time Password) entered by the user. These tests simulate user interactions, validate the OTP functionality, and check the correct behavior of the component.
+
+## Dependencies
+
+- `@testing-library/react`: Provides utilities for testing React components.
+- `jest`: Used for mocking functions, running tests, and handling assertions.
+- `react-router-dom`: Used for routing-related functionality, like navigation and path management.
+- `authService`: A mocked module that simulates API calls for sending and verifying OTPs.
+
+## Mocked Functions
+
+- **`jest.mock("../AuthService")`**: Mock the `authService` module's functions:
+  - `sendEmailVerificationCode`: Mocked to simulate the action of sending an OTP code to the user’s email.
+  - `verifyEmailVerificationCode`: Mocked to simulate the action of verifying the OTP entered by the user.
+
+- **`jest.mock("react-router-dom")`**: Mock `useNavigate` to simulate navigation between routes.
+
+## Test Setup
+
+- **`beforeEach`**: Clears all mocks and sets an email (`test@ufl.edu`) in sessionStorage to simulate the stored email used in the component.
+  
+- **`afterEach`**: Clears sessionStorage after each test to ensure tests do not affect one another.
+
+## Test Scenarios
+
+### 1. **Rendering OTPVerification and Sending OTP on Mount**
+   - **Purpose**: Ensures that when the `OTPVerification` component is mounted, the email address is displayed and the `sendEmailVerificationCode` function is called.
+   - **Test Steps**: 
+     - Render the component.
+     - Verify that the email is displayed.
+     - Confirm that `sendEmailVerificationCode` is called.
+
+### 2. **Shows Resend Timer and Hides Resend Button Initially**
+   - **Purpose**: Verifies that a timer appears showing the countdown (`Resend OTP in 60s`), and the resend button remains hidden until the timer finishes.
+   - **Test Steps**:
+     - Render the component.
+     - Check if the timer text is visible.
+     - Ensure the resend button does not appear initially.
+
+### 3. **Enabling and Submitting OTP after Entering 6 Digits**
+   - **Purpose**: Confirms that the "Verify OTP" button is enabled once all 6 digits are entered, and when clicked, the OTP is sent for verification.
+   - **Test Steps**:
+     - Render the component.
+     - Enter digits into the OTP input fields.
+     - Verify that the "Verify OTP" button is enabled.
+     - Simulate submitting the OTP and check that `verifyEmailVerificationCode` is called with the entered code.
+
+### 4. **Error on Invalid OTP (Not 6 Digits)**
+   - **Purpose**: Verifies that an error is displayed if the user tries to submit the OTP without entering 6 digits.
+   - **Test Steps**:
+     - Render the component.
+     - Attempt to submit without entering 6 digits.
+     - Check that no API call is made.
+
+### 5. **Displaying Error from verifyEmailVerificationCode**
+   - **Purpose**: Tests that an error message is shown when the OTP verification fails.
+   - **Test Steps**:
+     - Render the component and enter 6 digits.
+     - Simulate an API error (`Invalid code`).
+     - Ensure that the error message appears on the screen and no navigation occurs.
+
+### 6. **Resend OTP After Timer Expiration**
+   - **Purpose**: Confirms that the "Resend OTP" button appears after the 60-second countdown ends, and that clicking it triggers the `sendEmailVerificationCode` function.
+   - **Test Steps**:
+     - Render the component and simulate the passage of 60 seconds using Jest's fake timers.
+     - Ensure the "Resend OTP" button appears after the countdown ends.
+     - Simulate a click on the button and verify the API call to resend the OTP.
+
+### 7. **Navigating Back to Login**
+   - **Purpose**: Verifies that the "Return to Login" button navigates the user back to the login page.
+   - **Test Steps**:
+     - Render the component.
+     - Simulate a click on the "Return to Login" button.
+     - Ensure that `mockNavigate` is called with `/login`.
+
+## Test Utilities
+
+- **`render`**: Renders the component into the DOM for testing.
+- **`screen`**: Provides access to the rendered component and allows querying elements.
+- **`fireEvent`**: Simulates user interactions like typing and clicking.
+- **`waitFor`**: Waits for asynchronous operations to complete.
+- **`act`**: Used to simulate actions that cause state changes.
+
+## Mocked API Responses
+
+- **`sendEmailVerificationCode`**: Mocked to resolve successfully when the OTP is initially sent or resent.
+- **`verifyEmailVerificationCode`**: Mocked to resolve or reject based on the success or failure of OTP verification.
+
+## Error Handling
+
+- If the OTP is not 6 digits or verification fails, appropriate error messages are displayed, and navigation does not occur until the OTP is successfully verified.
+
+---
+
+# Header Component Test Documentation
+
+This file contains unit tests for the `Header` component. The `Header` component is responsible for rendering the navigation bar, displaying user information, and providing navigation functionalities such as selling items and logging out.
+
+## Dependencies
+
+- `@testing-library/react`: Provides utilities for testing React components.
+- `jest`: Used for mocking functions, running tests, and handling assertions.
+- `react-router-dom`: Used for routing-related functionality, like navigation and path management.
+
+## Mocked Functions
+
+- **`jest.mock("react-router-dom")`**: Mock the `useNavigate` function to simulate navigation between routes. The mock implementation uses `mockNavigate` to track calls to the navigation function.
+
+## Test Setup
+
+- **`beforeEach`**: Clears all mocks and sessionStorage to ensure that the state is reset before each test.
+  
+- **`afterEach`**: Ensures that no sessionStorage data persists across tests.
+
+## Test Scenarios
+
+### 1. **Rendering UF Marketplace Logo and Sell Button**
+   - **Purpose**: Verifies that the logo and "Sell items" button are rendered correctly.
+   - **Test Steps**:
+     - Render the component inside `MemoryRouter`.
+     - Check that the text "UF" and "Marketplace" appear in the logo.
+     - Confirm that the "Sell items" button exists in the document.
+
+### 2. **Displays Default Email if sessionStorage is Empty**
+   - **Purpose**: Verifies that the default email (`mani@gmail.com`) is displayed in the user menu if sessionStorage is empty.
+   - **Test Steps**:
+     - Render the component.
+     - Simulate a click on the "User menu" button to toggle the user menu.
+     - Verify that the default email is shown in the user menu.
+
+### 3. **Displays Name and Email from sessionStorage**
+   - **Purpose**: Ensures that the name and email from sessionStorage are correctly displayed in the user menu.
+   - **Test Steps**:
+     - Set `email` and `name` in sessionStorage.
+     - Render the component.
+     - Simulate a click on the "User menu" button to toggle the user menu.
+     - Check that the correct name and email from sessionStorage are displayed.
+
+### 4. **Clicking Sell Button Calls navigate("/listing")**
+   - **Purpose**: Verifies that clicking the "Sell items" button triggers navigation to the `/listing` page.
+   - **Test Steps**:
+     - Render the component.
+     - Simulate a click on the "Sell items" button.
+     - Verify that `mockNavigate` is called with the `/listing` route.
+
+### 5. **Clicking the "Marketplace" Text Calls navigate("/dashboard")**
+   - **Purpose**: Verifies that clicking the "Marketplace" text in the logo triggers navigation to the `/dashboard` page.
+   - **Test Steps**:
+     - Render the component.
+     - Simulate a click on the "Marketplace" text.
+     - Verify that `mockNavigate` is called with the `/dashboard` route.
+
+### 6. **Clicking User Icon Toggles User Menu Open and Closed**
+   - **Purpose**: Confirms that clicking the user icon opens and closes the user menu.
+   - **Test Steps**:
+     - Render the component.
+     - Simulate a click on the "User menu" button to open the menu.
+     - Verify that the default email is displayed.
+     - Simulate another click to close the menu and check that the email is no longer visible.
+
+### 7. **Clicking Logout Clears sessionStorage and Navigates to /login**
+   - **Purpose**: Verifies that clicking the "Logout" button clears sessionStorage and navigates to the `/login` page.
+   - **Test Steps**:
+     - Set `email` and `name` in sessionStorage.
+     - Render the component and open the user menu.
+     - Simulate a click on the "Logout" button.
+     - Verify that sessionStorage is cleared and `mockNavigate` is called with the `/login` route.
+
+## Test Utilities
+
+- **`render`**: Renders the component into the DOM for testing.
+- **`screen`**: Provides access to the rendered component and allows querying elements.
+- **`fireEvent`**: Simulates user interactions like clicking and toggling.
+- **`MemoryRouter`**: A router that keeps the history in memory, used for testing routing components.
+
+## Mocked API Responses
+
+- **`useNavigate`**: Mocked to track navigation calls, simulating the behavior of `react-router-dom`'s `useNavigate` hook.
+
+## Error Handling
+
+- No explicit error handling is tested in this file as it mainly focuses on component rendering and user interaction behavior.
+
+---
+
