@@ -312,4 +312,83 @@ This document lists the unit tests for the backend of the application. Each test
   - **Expected Output**: HTTP 401 Unauthorized with `{"error": "Invalid verification code"}`
   - **Mock**: `GetVerificationCode` returns a mismatched code.
 
+## **Listing Handlers**
+
+### **1. `DeleteListingHandler`**
+
+- **Test Case 1**: Successful Deletion
+  - **Input**: HTTP DELETE request with `listingId=1` and header `userId=1`
+  - **Expected Output**: HTTP 200 OK with `{"message": "Listing deleted successfully"}`
+  - **Mock**: Database confirms user owns listing, deletes associated images, and removes listing successfully.
+
+- **Test Case 2**: Unauthorized User
+  - **Input**: HTTP DELETE request with `listingId=1` and header `userId=2`
+  - **Expected Output**: HTTP 401 Unauthorized with `"Unauthorized\n"`
+  - **Mock**: Database indicates listing belongs to a different user.
+
+- **Test Case 3**: Listing Not Found
+  - **Input**: HTTP DELETE request with `listingId=1` and header `userId=1`
+  - **Expected Output**: HTTP 404 Not Found with `"Listing not found\n"`
+  - **Mock**: Database returns no matching listing.
+
+- **Test Case 4**: Invalid Listing ID
+  - **Input**: HTTP DELETE request with `listingId=invalid` and header `userId=1`
+  - **Expected Output**: HTTP 400 Bad Request with `"Invalid listingId\n"`
+  - **Mock**: No database interaction due to invalid input.
+
+- **Test Case 5**: Missing User ID
+  - **Input**: HTTP DELETE request with `listingId=1` and no `userId` header
+  - **Expected Output**: HTTP 400 Bad Request with `"Missing userId header\n"`
+  - **Mock**: No database interaction due to missing header.
+
 ---
+
+### **2. `ListingsHandler`**
+
+- **Test Case 1**: Successful GET Listings Excluding User
+  - **Input**: HTTP GET request with header `userId=1`
+  - **Expected Output**: HTTP 200 OK with JSON array of listings excluding `userId=1` (e.g., `[{"id": 1, "userId": 2, ...}]`)
+  - **Mock**: Database returns listings from other users with associated image data.
+
+- **Test Case 2**: Successful POST Create Listing
+  - **Input**: HTTP POST request with multipart form (`productName="Product"`, `price="20.0"`, etc.) and header `userId=1`
+  - **Expected Output**: HTTP 200 OK with JSON array of all listings for `userId=1` (e.g., `[{"id": 1, "userId": 1, ...}]`)
+  - **Mock**: Database inserts new listing, stores image, and returns all user listings with image data.
+
+- **Test Case 3**: GET Missing User ID
+  - **Input**: HTTP GET request with no `userId` header
+  - **Expected Output**: HTTP 400 Bad Request with `"Missing userId header\n"`
+  - **Mock**: No database interaction due to missing header.
+
+---
+
+### **3. `EditListingHandler`**
+
+- **Test Case 1**: Successful Update
+  - **Input**: HTTP PUT request with multipart form (`listingId="1"`, `productName="Updated Product"`, `productDescription="Updated Description"`) and header `userId=1`
+  - **Expected Output**: HTTP 200 OK with `{"message": "Listing updated successfully"}`
+  - **Mock**: Database confirms user owns listing and updates specified fields successfully.
+
+- **Test Case 2**: Unauthorized User
+  - **Input**: HTTP PUT request with multipart form (`listingId="1"`) and header `userId=2`
+  - **Expected Output**: HTTP 401 Unauthorized with `"Unauthorized\n"`
+  - **Mock**: Database indicates listing belongs to a different user.
+
+---
+
+### **4. `UserListingsHandler`**
+
+- **Test Case 1**: Fetch User Listings
+  - **Input**: HTTP GET request with header `userId=1`
+  - **Expected Output**: HTTP 200 OK with JSON array of listings for `userId=1` (e.g., `[{"id": 1, "userId": 1, ...}]`)
+  - **Mock**: Database returns all listings for the specified user with associated image data.
+
+- **Test Case 2**: No Listings Found
+  - **Input**: HTTP GET request with header `userId=1`
+  - **Expected Output**: HTTP 200 OK with an empty JSON array (`[]`)
+  - **Mock**: Database returns no listings for the user.
+
+- **Test Case 3**: Invalid User ID
+  - **Input**: HTTP GET request with header `userId=invalid`
+  - **Expected Output**: HTTP 400 Bad Request with `"Invalid userId header\n"`
+  - **Mock**: No database interaction due to invalid header value.
