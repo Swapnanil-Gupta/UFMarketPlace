@@ -119,6 +119,19 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	userID, storedHash, name, _, verificationStatus, err := GetUserInfo(userID)
+
+	if err != nil {
+		http.Error(w, "Error getting user details", http.StatusInternalServerError)
+		return
+	}
+
+	if verificationStatus == 0 {
+		http.Error(w, "Email not verified. Verify Email to login", http.StatusUnauthorized)
+		return
+	}
+
+
 	sessionID, err := CreateSession(userID)
 	if err != nil {
 		http.Error(w, "Error creating session", http.StatusInternalServerError)
