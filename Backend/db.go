@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/rand"
+	"database/sql"
 	"encoding/base64"
 	"fmt"
 	"time"
@@ -17,6 +18,7 @@ func initDB() error {
 		email TEXT UNIQUE NOT NULL,
 		name TEXT NOT NULL,
 		password TEXT NOT NULL,
+		verification_status INTEGER DEFAULT 0,
 		created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 	);`
 	if _, err := db.Exec(usersTable); err != nil {
@@ -33,6 +35,19 @@ func initDB() error {
 	if _, err := db.Exec(sessionsTable); err != nil {
 		return fmt.Errorf("error creating sessions table: %v", err)
 	}
+
+	verificationCodesTable := `
+	CREATE TABLE IF NOT EXISTS verification_codes (
+		user_id INT PRIMARY KEY REFERENCES users(id),
+		email TEXT NOT NULL,
+		code TEXT NOT NULL,
+		expires_at BIGINT NOT NULL
+	);`
+
+	if _, err := db.Exec(verificationCodesTable); err != nil {
+		return fmt.Errorf("error creating verification codes table: %v", err)
+	}
+
 	return nil
 }
 
@@ -54,6 +69,8 @@ func CreateUser(name, password, email string) (int, error) {
 	return userID, err
 }
 
+
+
 // GetUserByEmail retrieves a user's id, hashed password, and name by email.
 func GetUserByEmail(useremail string) (int, string, string, error) {
 	var id int
@@ -62,6 +79,19 @@ func GetUserByEmail(useremail string) (int, string, string, error) {
 	err := db.QueryRow("SELECT id, password, name FROM users WHERE email = $1", useremail).Scan(&id, &storedHash, &name)
 	return id, storedHash, name, err
 }
+
+
+
+func GetUserInfo(userId int) (int, string, string, string, int, error){
+	var userID int
+	var email string
+	var storedHash string
+	var name string
+	var verificationStatus int
+	err := db.QueryRow("SELECT id, password, name, email, verification_status FROM users WHERE id = $1", userId ).Scan(&userID, &storedHash, &name, &email, &verificationStatus)
+	return userID, storedHash, name, email, verificationStatus, err
+}
+
 
 // generateSessionID creates a cryptographically secure random session token.
 func generateSessionID() (string, error) {
@@ -120,4 +150,80 @@ func initListingsDB() error {
 		return fmt.Errorf("error creating listing_images table: %v", err)
 	}
 	return nil
+}
+
+
+func ValidateSession(sessionID string) (bool, error) {
+    var retrievedSessionID string
+    currentTime := time.Now().Unix()
+
+    // Query to check session validity
+    err := db.QueryRow(
+        `SELECT session_id FROM sessions 
+        WHERE session_id = $1 
+        AND expires_at > $2`,
+        sessionID,
+        currentTime,
+    ).Scan(&retrievedSessionID)
+
+    switch {
+    case err == sql.ErrNoRows:
+        return false, nil
+    case err != nil:
+        return false, fmt.Errorf("database error: %w", err)
+    default:
+        return true, nil
+    }
+}
+
+func StoreVerificationCode(userID int, email, code string) error {
+    expiry := time.Now().Add(3 * time.Minute)
+    _, err := db.Exec(
+        `INSERT INTO verification_codes (user_id, email, code, expires_at)
+        VALUES ($1, $2, $3, $4)
+        ON CONFLICT (user_id) 
+        DO UPDATE SET
+            email = EXCLUDED.email,
+            code = EXCLUDED.code,
+            expires_at = EXCLUDED.expires_at`,
+        userID, email, code, expiry.Unix(),
+    )
+    return err
+}
+
+func GetVerificationCode(userID int) (string, time.Time, error) {
+    var code string
+    var expiresAt int64
+    err := db.QueryRow(
+        `SELECT code, expires_at FROM verification_codes 
+        WHERE user_id = $1 AND expires_at > $2`,
+        userID, 
+        time.Now().Unix(),
+    ).Scan(&code, &expiresAt)
+    
+    return code, time.Unix(expiresAt, 0), err
+}
+
+func UpdateVerificationStatus(userID int) error {
+    _, err := db.Exec(
+        "UPDATE users SET verification_status = 1 WHERE id = $1",
+        userID,
+    )
+    return err
+}
+
+func DeleteVerificationCode(userID int) error {
+    _, err := db.Exec(
+        "DELETE FROM verification_codes WHERE user_id = $1",
+        userID,
+    )
+    return err
+}
+
+func DeleteExpiredVerificationCodes() error {
+    _, err := db.Exec(
+        `DELETE FROM verification_codes WHERE expires_at < $1`,
+        time.Now().Unix(),
+    )
+    return err
 }

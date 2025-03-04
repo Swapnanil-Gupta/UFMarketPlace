@@ -1,0 +1,9 @@
+{
+  "smtp": {
+    "host": "smtp.example.com",
+    "port": 587,
+    "username": "apikey",
+    "password": "your-secure-password",
+    "sender": "your-email@example.com"
+  }
+}

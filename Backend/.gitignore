@@ -29,3 +29,6 @@ dist-ssr
 
 # exe files
 *.exe
+
+# config file
+config.json

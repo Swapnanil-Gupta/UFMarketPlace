@@ -1,7 +1,9 @@
 package main
 
 import (
+	"UFMarketPlace/utils"
 	"database/sql"
+	"encoding/json"
 	"log"
 	"net/http"
 	"os"
@@ -12,9 +14,32 @@ import (
 
 var db *sql.DB
 
+
+type Config struct {
+    SMTP struct {
+        Host     string `json:"host"`
+        Port     int    `json:"port"`
+        Username string `json:"username"`
+        Password string `json:"password"`
+		Sender  string `json:"sender"`
+    } `json:"smtp"`
+}
+
+var appConfig Config
+
+
+
 func main() {
 	var err error
+	loadConfig("./config.json")
 
+	utils.InitEmailConfig(utils.EmailConfig{
+		Host:     appConfig.SMTP.Host,
+		Port:     appConfig.SMTP.Port,
+		Username: appConfig.SMTP.Username,
+		Password: appConfig.SMTP.Password,
+		Sender:   appConfig.SMTP.Sender,
+	})
 	// Set up CORS middleware.
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:*"}, // For Frontend
@@ -64,4 +89,18 @@ func main() {
 	}
 	log.Printf("Server running on :%s", port)
 	log.Fatal(http.ListenAndServe(":"+port, handler))
+}
+
+
+
+func loadConfig(path string) {
+	file, err := os.Open(path)
+	if err != nil {
+		log.Fatalf("Error loading config: %v", err)
+	}
+	defer file.Close()
+
+	if err := json.NewDecoder(file).Decode(&appConfig); err != nil {
+		log.Fatalf("Invalid config: %v", err)
+	}
 }
