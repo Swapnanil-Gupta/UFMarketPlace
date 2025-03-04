@@ -55,3 +55,165 @@
 5. Develop drag-and-drop image upload
 
 ---
+
+## User Stories (Backend)
+
+# **UFMarketPlace API Documentation**
+
+This API handles user authentication and email verification.\
+**All error responses include a plain text message unless stated otherwise.**
+
+---
+
+## **Signup**
+
+Registers a new user.
+
+### **Endpoint**
+
+`POST /signup`
+
+### **Request Body (JSON)**
+
+```json
+{
+  "email": "user@example.com",
+  "name": "John Doe",
+  "password": "securepassword123"
+}
+```
+
+### **Success Response (JSON)**
+
+```json
+{
+  "message": "User registered successfully",
+  "userId": "123"
+}
+```
+
+### **Response Errors**
+
+| Status Code | Error Type            | Example Response Body                     |
+| ----------- | --------------------- | ----------------------------------------- |
+| 405         | Method Not Allowed    | "Method Not Allowed"                      |
+| 400         | Invalid Request       | "Email, Name, and Password required"      |
+| 400         | Duplicate Email       | "Email already registered"                |
+| 500         | Internal Server Error | "Could not register user: database error" |
+
+---
+
+## **Login**
+
+Authenticates a user.
+
+### **Endpoint**
+
+`POST /login`
+
+### **Request Body (JSON)**
+
+```json
+{
+  "email": "user@example.com",
+  "password": "securepassword123"
+}
+```
+
+### **Success Response (JSON)**
+
+```json
+{
+  "sessionId": "abc123",
+  "name": "John Doe",
+  "email": "user@example.com",
+  "userId": "123"
+}
+```
+
+---
+
+## **Send Verification Code**
+
+Sends a verification code to the user's email.
+
+### **Endpoint**
+
+`POST /sendEmailVerificationCode`
+
+### **Request Body (JSON)**
+
+```json
+{
+  "email": "user@example.com"
+}
+```
+
+### **Success Response (JSON)**
+
+```json
+{
+  "message": "Verification code sent successfully. Code will be active for 3 minutes."
+}
+```
+
+### **Response Errors**
+
+| Status Code | Error Type            | Example Response Body                         |
+| ----------- | --------------------- | --------------------------------------------- |
+| 405         | Method Not Allowed    | "Method Not Allowed"                          |
+| 400         | Invalid Request       | "Email is required for verification"          |
+| 400         | Already Verified      | "Account is already verified"                 |
+| 404         | User Not Found        | "Error getting user info..."                  |
+| 500         | Internal Server Error | "Error sending email: SMTP connection failed" |
+
+---
+
+## **Verify Email Verification Code**
+
+Verifies the email using a verification code.
+
+### **Endpoint**
+
+`POST /verifyEmailVerificationCode`
+
+### **Request Body (JSON)**
+
+```json
+{
+  "email": "user@example.com",
+  "code": "123456"
+}
+```
+
+### **Success Response (JSON)**
+
+```json
+{
+  "message": "Email user@example.com successfully verified",
+  "userId": "123"
+}
+```
+
+### **Already Verified Response (JSON)**
+
+```json
+{
+  "message": "Email associated with account is already verified"
+}
+```
+
+### **Response Errors**
+
+| Status Code | Error Type            | Example Response Body                        |
+| ----------- | --------------------- | -------------------------------------------- |
+| 405         | Method Not Allowed    | "Method Not Allowed"                         |
+| 400         | Invalid Request       | "Missing required fields: email and code"    |
+| 400         | Expired/Invalid Code  | "No active verification code found"          |
+| 410         | Code Expired          | "Verification code has expired"              |
+| 401         | Invalid Code          | "Invalid verification code"                  |
+| 500         | Internal Server Error | "Verification update failed: database error" |
+
+---
+
+This API ensures a smooth user authentication and email verification process for UFMarketPlace.
