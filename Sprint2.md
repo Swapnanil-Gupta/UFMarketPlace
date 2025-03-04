@@ -4,6 +4,7 @@
 
 - Created an API to send OTP for email verification.
 - Updated database with expiration time each time an OTP is sent.
+-  Used **SendGrid** to send OTP emails to users for verification. 
 - Created an API to validate the OTP entered by the user and check if it has expired.
 - Integrated Forntend and Backend by using CORS (Cross-Origin Resource Sharing).
 
