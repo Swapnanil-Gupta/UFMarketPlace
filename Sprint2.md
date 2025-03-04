@@ -1,6 +1,6 @@
 # Sprint 2
 
-## Details of Work Completed in Sprint 2 (Backend)
+## Details of Work Completed in Sprint 2
 
 - Created an API to send OTP for email verification.
 - Updated database with expiration time each time an OTP is sent.
