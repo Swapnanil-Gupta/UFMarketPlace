@@ -42,7 +42,7 @@ func sendEmail(to, subject, body string) error {
 
 // sendVerificationCode sends the verification code to the recipient via email.
 // Returns an error if sending fails, or nil if successful.
-func SendVerificationCode(to, code string) error {
+var SendVerificationCode = func(to, code string) error {
 	body := fmt.Sprintf("Your verification code is: %s", code)
 	err := sendEmail(to, "UFMarketPlace Verification Code", body)
 	if err != nil {

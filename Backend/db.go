@@ -52,7 +52,7 @@ func initDB() error {
 }
 
 // CreateUser inserts a new user with a hashed password and returns the new user's id.
-func CreateUser(name, password, email string) (int, error) {
+var CreateUser = func(name, password, email string) (int, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return 0, err
@@ -72,7 +72,7 @@ func CreateUser(name, password, email string) (int, error) {
 
 
 // GetUserByEmail retrieves a user's id, hashed password, and name by email.
-func GetUserByEmail(useremail string) (int, string, string, error) {
+var GetUserByEmail = func(useremail string) (int, string, string, error) {
 	var id int
 	var storedHash string
 	var name string
@@ -82,7 +82,7 @@ func GetUserByEmail(useremail string) (int, string, string, error) {
 
 
 
-func GetUserInfo(userId int) (int, string, string, string, int, error){
+var GetUserInfo = func(userId int) (int, string, string, string, int, error){
 	var userID int
 	var email string
 	var storedHash string
@@ -103,7 +103,7 @@ func generateSessionID() (string, error) {
 }
 
 // CreateSession inserts a new session record for the given user id.
-func CreateSession(userID int) (string, error) {
+var CreateSession = func(userID int) (string, error) {
 	sessionID, err := generateSessionID()
 	if err != nil {
 		return "", err
@@ -176,7 +176,7 @@ func ValidateSession(sessionID string) (bool, error) {
     }
 }
 
-func StoreVerificationCode(userID int, email, code string) error {
+var StoreVerificationCode = func(userID int, email, code string) error {
     expiry := time.Now().Add(3 * time.Minute)
     _, err := db.Exec(
         `INSERT INTO verification_codes (user_id, email, code, expires_at)
@@ -191,7 +191,7 @@ func StoreVerificationCode(userID int, email, code string) error {
     return err
 }
 
-func GetVerificationCode(userID int) (string, time.Time, error) {
+var GetVerificationCode =  func(userID int) (string, time.Time, error) {
     var code string
     var expiresAt int64
     err := db.QueryRow(
@@ -204,7 +204,7 @@ func GetVerificationCode(userID int) (string, time.Time, error) {
     return code, time.Unix(expiresAt, 0), err
 }
 
-func UpdateVerificationStatus(userID int) error {
+var  UpdateVerificationStatus =  func(userID int) error {
     _, err := db.Exec(
         "UPDATE users SET verification_status = 1 WHERE id = $1",
         userID,
@@ -212,7 +212,7 @@ func UpdateVerificationStatus(userID int) error {
     return err
 }
 
-func DeleteVerificationCode(userID int) error {
+var  DeleteVerificationCode = func(userID int) error {
     _, err := db.Exec(
         "DELETE FROM verification_codes WHERE user_id = $1",
         userID,

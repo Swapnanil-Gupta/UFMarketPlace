@@ -79,7 +79,7 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // EmailExists checks if an email already exists in the users table.
-func EmailExists(email string) (bool, error) {
+var EmailExists = func(email string) (bool, error) {
 	var exists bool
 	query := "SELECT EXISTS(SELECT 1 FROM users WHERE email = $1)"
 	err := db.QueryRow(query, email).Scan(&exists)
