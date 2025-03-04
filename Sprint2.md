@@ -1,5 +1,11 @@
 # Sprint 2
 
+## Details of Work Completed in Sprint 2 (Backend)
+
+- Created an API to send OTP for email verification.
+- Updated database with expiration time each time an OTP is sent.
+- Created an API to validate the OTP entered by the user and check if it has expired.
+
 ## User Stories (Frontend)
 
 13. **US-013**: As a seller, I want to create product listings with images to showcase my items
@@ -58,13 +64,9 @@
 
 ## User Stories (Backend)
 
-### **US-024**:
+**US-024**: As a user, I would want only students in the university to view and sell items in the UFMarket place, so email verification through a One-Time Password (OTP) is required.
 
-As a user, I would want only students in the university to view and sell items in the UFMarket place, so email verification through a One-Time Password (OTP) is required.
-
-### **US-025**:
-
-As a user, if I have not verified my email through OTP, I should not be allowed to log in to the portal.
+**US-025**: As a user, if I have not verified my email through OTP, I should not be allowed to log in to the portal.
 
 # **UFMarketPlace API Documentation**
 
