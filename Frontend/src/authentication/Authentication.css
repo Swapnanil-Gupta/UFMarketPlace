@@ -111,3 +111,121 @@
   .error-message {
     color: red;
   }
+
+  /* OTP Verification Styles */
+.verification-content {
+  text-align: center;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 3rem;
+  border-radius: 15px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.otp-inputs {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.otp-digit {
+  width: 50px;
+  height: 50px;
+  text-align: center;
+  font-size: 1.5rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.otp-digit:focus {
+  border-color: #667eea;
+  outline: none;
+  box-shadow: 0 0 5px rgba(102, 126, 234, 0.5);
+}
+
+.resend-section {
+  margin: 1.5rem 0;
+}
+
+.resend-timer {
+  color: #718096;
+  font-size: 0.9rem;
+}
+
+.success-message {
+  color: #48bb78;
+  margin: 1rem 0;
+  font-weight: 500;
+}
+
+/* Update existing styles */
+.submit-btn {
+  margin-top: 1rem;
+}
+
+.back-to-login {
+  margin-top: 1.5rem;
+}
+
+.back-to-login {
+  background: linear-gradient(45deg, #667eea, #4c51bf);
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.back-to-login::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  transition: 0.5s;
+}
+
+.back-to-login:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.back-to-login:hover::before {
+  left: 100%;
+}
+
+.back-to-login:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.back-to-login:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.4);
+}
+
+@media (max-width: 480px) {
+  .back-to-login {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+  }
+}
