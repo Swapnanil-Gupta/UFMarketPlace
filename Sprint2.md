@@ -58,6 +58,14 @@
 
 ## User Stories (Backend)
 
+### **US-024**:
+
+As a user, I would want only students in the university to view and sell items in the UFMarket place, so email verification through a One-Time Password (OTP) is required.
+
+### **US-025**:
+
+As a user, if I have not verified my email through OTP, I should not be allowed to log in to the portal.
+
 # **UFMarketPlace API Documentation**
 
 This API handles user authentication and email verification.\
@@ -217,3 +225,93 @@ Verifies the email using a verification code.
 ---
 
 This API ensures a smooth user authentication and email verification process for UFMarketPlace.
+
+# Backend Unit Tests
+
+This document lists the unit tests for the backend of the application. Each test is designed to validate a specific functionality of the backend.
+
+---
+
+## **Authentication Handlers**
+
+### **1. `signupHandler`**
+
+- **Test Case 1**: Successful user registration
+
+  - **Input**: Valid `SignUpCredentials` (email, name, password)
+  - **Expected Output**: HTTP 200 OK with `{"message": "User registered successfully", "userId": 123}`
+  - **Mock**: `EmailExists` returns `false`, `CreateUser` returns `123`.
+
+- **Test Case 2**: Duplicate email registration
+
+  - **Input**: `SignUpCredentials` with an email that already exists
+  - **Expected Output**: HTTP 400 Bad Request with `{"error": "Email already registered"}`
+  - **Mock**: `EmailExists` returns `true`.
+
+- **Test Case 3**: Missing required fields
+  - **Input**: `SignUpCredentials` with missing email, name, or password
+  - **Expected Output**: HTTP 400 Bad Request with `{"error": "Email, Name, and Password required"}`
+
+---
+
+### **2. `loginHandler`**
+
+- **Test Case 1**: Successful login
+
+  - **Input**: Valid `LogInCredentials` (email, password)
+  - **Expected Output**: HTTP 200 OK with `{"sessionId": "session-123", "name": "Gator", "email": "gator@uf.edu", "userId": 123}`
+  - **Mock**: `GetUserByEmail` returns valid user data, `GetUserInfo` returns verified status, `CreateSession` returns `"session-123"`.
+
+- **Test Case 2**: Invalid credentials
+
+  - **Input**: Incorrect email or password
+  - **Expected Output**: HTTP 401 Unauthorized with `{"error": "Invalid credentials"}`
+  - **Mock**: `GetUserByEmail` returns an error or `bcrypt.CompareHashAndPassword` fails.
+
+- **Test Case 3**: Unverified email
+  - **Input**: Valid `LogInCredentials` but email is not verified
+  - **Expected Output**: HTTP 401 Unauthorized with `{"error": "Email is not verified"}`
+  - **Mock**: `GetUserInfo` returns `verificationStatus = 0`.
+
+---
+
+### **3. `sendVerificationCodeHandler`**
+
+- **Test Case 1**: Successful code generation and email sending
+
+  - **Input**: Valid `VerificationRequest` (email)
+  - **Expected Output**: HTTP 200 OK with `{"message": "Verification code sent successfully"}`
+  - **Mock**: `GetUserByEmail` returns valid user, `StoreVerificationCode` succeeds, `utils.SendVerificationCode` succeeds.
+
+- **Test Case 2**: Email already verified
+
+  - **Input**: `VerificationRequest` for an already verified email
+  - **Expected Output**: HTTP 400 Bad Request with `{"error": "Account is already verified"}`
+  - **Mock**: `GetUserInfo` returns `verificationStatus = 1`.
+
+- **Test Case 3**: Invalid email
+  - **Input**: `VerificationRequest` with an unregistered email
+  - **Expected Output**: HTTP 400 Bad Request with `{"error": "Email not found"}`
+
+---
+
+### **4. `verifyCodeHandler`**
+
+- **Test Case 1**: Successful verification
+
+  - **Input**: Valid `VerifyCodeRequest` (email, code)
+  - **Expected Output**: HTTP 200 OK with `{"message": "Email successfully verified", "userId": 123}`
+  - **Mock**: `GetVerificationCode` returns a valid code, `UpdateVerificationStatus` succeeds.
+
+- **Test Case 2**: Expired verification code
+
+  - **Input**: Valid `VerifyCodeRequest` but code is expired
+  - **Expected Output**: HTTP 410 Gone with `{"error": "Verification code has expired"}`
+  - **Mock**: `GetVerificationCode` returns an expired timestamp.
+
+- **Test Case 3**: Invalid verification code
+  - **Input**: `VerifyCodeRequest` with an incorrect code
+  - **Expected Output**: HTTP 401 Unauthorized with `{"error": "Invalid verification code"}`
+  - **Mock**: `GetVerificationCode` returns a mismatched code.
+
+---
