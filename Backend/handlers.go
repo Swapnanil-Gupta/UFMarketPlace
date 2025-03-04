@@ -127,7 +127,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if verificationStatus == 0 {
-		http.Error(w, "Email not verified. Verify Email to login", http.StatusUnauthorized)
+		http.Error(w, "Email is not verified", http.StatusUnauthorized)
 		return
 	}
 
