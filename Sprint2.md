@@ -7,6 +7,9 @@
 -  Used **SendGrid** to send OTP emails to users for verification. 
 - Created an API to validate the OTP entered by the user and check if it has expired.
 - Integrated Forntend and Backend by using CORS (Cross-Origin Resource Sharing).
+- Implemented endpoints to retrieve listings: one endpoint returns all listings excluding those created by the current user, and another returns only the listings of the current user.
+- Integrated CRUD operations for product listings, including creating, updating (with full image replacement when new images are provided), and deleting listings along with their associated images.
+- Images are stored in the database as binary data and are returned as base64-encoded strings to allow direct rendering on the frontend.
 
 ## User Stories (Frontend)
 
@@ -64,6 +67,40 @@
 
 **US-024**: As a user, I would want only students in the university to view and sell items in the UFMarket place, so email verification through a One-Time Password (OTP) is required.
 **US-025**: As a user, if I have not verified my email through OTP, I should not be allowed to log in to the portal.
+**US-026**: As a verified user, I want to create a new product listing with images so that I can sell my items on UFMarketPlace.
+- **Acceptance Criteria:**
+  - The user must be authenticated (with a valid session) and have a verified email.
+  - The `POST /listings` endpoint accepts multipart form data including fields:
+    - `productName`, `productDescription`, `price`, `category`
+    - One or more image files under the key `images`
+  - The listing is saved in the database along with the images (which are stored in binary form and returned as base64 strings).
+  - The API response returns all listings for the current user including the new one.
+
+**US-027**: As a user, I want to view all product listings except my own so that I can browse items available from other sellers.
+- **Acceptance Criteria:**
+  - The `GET /listings` endpoint returns listings that do not belong to the current user.
+  - The request requires a `userId` header indicating the current user’s ID.
+  - The response includes complete listing details along with associated images (base64 encoded).
+
+**US-028**: As a user, I want to view all my own product listings so that I can manage my items for sale.
+- **Acceptance Criteria:**
+  - The `GET /userListings` endpoint returns only listings created by the current user.
+  - The request requires a `userId` header.
+  - The response includes listing details and associated images.
+
+**US-029**: As a user, I want to edit my existing product listing (including updating images) so that I can update or correct my listing information.
+- **Acceptance Criteria:**
+  - The `PUT /listing/edit` endpoint allows updating listing fields (`productName`, `productDescription`, `price`, `category`).
+  - New images provided will replace all existing images for that listing.
+  - The endpoint verifies that the listing belongs to the current user (using the `userId` header).
+  - The API returns a success message upon successful update.
+
+**US-030**: As a user, I want to delete my product listing so that I can remove items that are no longer available.
+- **Acceptance Criteria:**
+  - The `DELETE /listing/delete` endpoint allows the user to delete a listing.
+  - The listing is identified via a query parameter (`listingId`), and the request includes the `userId` header.
+  - All images associated with the listing are also removed from the database.
+  - A success message is returned once the deletion is complete.
 
 # **UFMarketPlace API Documentation**
 
@@ -224,6 +261,193 @@ Verifies the email using a verification code.
 ---
 
 This API ensures a smooth user authentication and email verification process for UFMarketPlace.
+
+
+## **Create Listing**
+
+Registers a new product listing.
+
+### **Endpoint**
+
+`POST /listings`
+
+### **Request Headers**
+
+- `userId` (required): The ID of the logged-in user.
+
+### **Request Body (Multipart Form Data)**
+
+| Field              | Type   | Description                    |
+| ------------------ | ------ | ------------------------------ |
+| `productName`      | Text   | Name of the product.           |
+| `productDescription` | Text   | Description of the product.    |
+| `price`            | Number | Price of the product.          |
+| `category`         | Text   | Product category (e.g., "Electronics"). |
+| `images`           | File   | One or more image files.       |
+
+### **Success Response (JSON)**
+
+Returns all listings for the current user after creation.
+
+```json
+[
+  {
+    "id": 3,
+    "userId": 5,
+    "userName": "Alice",
+    "userEmail": "alice@example.com",
+    "productName": "Smartphone",
+    "productDescription": "Latest model smartphone",
+    "price": 799.99,
+    "category": "Electronics",
+    "createdAt": "2025-03-03T11:00:00Z",
+    "updatedAt": "2025-03-03T11:00:00Z",
+    "images": [
+      {
+        "id": 2,
+        "contentType": "image/jpeg",
+        "data": "..."
+      }
+    ]
+  }
+]
+```
+
+### **Response Errors**
+
+| Status Code | Error Type            | Example Response Body                   |
+| ----------- | --------------------- | --------------------------------------- |
+| 400         | Invalid Request       | "Unable to parse form data", "Invalid price" |
+| 400         | Missing Header        | "Missing userId header"                 |
+| 500         | Internal Server Error | "error message"                         |
+
+---
+
+## **Get User Listings**
+
+Fetches all listings created by the current user.
+
+### **Endpoint**
+
+`GET /userListings`
+
+### **Request Headers**
+
+- `userId` (required): The ID of the logged-in user.
+
+### **Success Response (JSON)**
+
+```json
+[
+  {
+    "id": 3,
+    "userId": 5,
+    "userName": "Alice",
+    "userEmail": "alice@example.com",
+    "productName": "Smartphone",
+    "productDescription": "Latest model smartphone",
+    "price": 799.99,
+    "category": "Electronics",
+    "createdAt": "2025-03-03T11:00:00Z",
+    "updatedAt": "2025-03-03T11:00:00Z",
+    "images": [
+      {
+        "id": 2,
+        "contentType": "image/jpeg",
+        "data": "..."
+      }
+    ]
+  }
+]
+```
+
+### **Response Errors**
+
+| Status Code | Error Type            | Example Response Body                   |
+| ----------- | --------------------- | --------------------------------------- |
+| 400         | Missing/Invalid Header | "Missing userId header" or "Invalid userId header" |
+| 500         | Internal Server Error | "error message"                         |
+
+---
+
+## **Edit Listing**
+
+Updates an existing listing (only if owned by the current user). If new images are provided, all existing images for that listing are replaced.
+
+### **Endpoint**
+
+`PUT /listing/edit`
+
+### **Request Headers**
+
+- `userId` (required): The ID of the logged-in user.
+
+### **Request Body (Multipart Form Data)**
+
+| Field              | Type   | Description                    |
+| ------------------ | ------ | ------------------------------ |
+| `listingId`        | Number | ID of the listing to update.   |
+| `productName`      | Text   | Optional. New product name.    |
+| `productDescription` | Text   | Optional. New product description. |
+| `price`            | Number | Optional. New price.           |
+| `category`         | Text   | Optional. New category.        |
+| `images`           | File   | Optional. New image files (replaces existing images). |
+
+### **Success Response (JSON)**
+
+```json
+{
+  "message": "Listing updated successfully"
+}
+```
+
+### **Response Errors**
+
+| Status Code | Error Type            | Example Response Body                   |
+| ----------- | --------------------- | --------------------------------------- |
+| 400         | Invalid Request       | "Invalid listingId", "Invalid userId header" |
+| 401         | Unauthorized          | "Unauthorized"                          |
+| 500         | Internal Server Error | "error message"                         |
+
+---
+
+## **Delete Listing**
+
+Deletes an existing listing along with all its images (only if owned by the current user).
+
+### **Endpoint**
+
+`DELETE /listing/delete`
+
+### **Request Headers**
+
+- `userId` (required): The ID of the logged-in user.
+
+### **Query Parameters**
+
+- `listingId` (required): The ID of the listing to delete.
+
+### **Success Response (JSON)**
+
+```json
+{
+  "message": "Listing deleted successfully"
+}
+```
+
+### **Response Errors**
+
+| Status Code | Error Type            | Example Response Body                   |
+| ----------- | --------------------- | --------------------------------------- |
+| 400         | Invalid Request       | "Invalid listingId", "Missing userId header" |
+| 401         | Unauthorized          | "Unauthorized"                          |
+| 500         | Internal Server Error | "error message"                         |
+
+
+
+
+
+
 
 # Backend Unit Tests
 
@@ -393,3 +617,4 @@ This document lists the unit tests for the backend of the application. Each test
   - **Input**: HTTP GET request with header `userId=invalid`
   - **Expected Output**: HTTP 400 Bad Request with `"Invalid userId header\n"`
   - **Mock**: No database interaction due to invalid header value.
+
