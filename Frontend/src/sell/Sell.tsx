@@ -306,6 +306,7 @@ const Sell: React.FC = () => {
         <button 
           className="floating-action-btn"
           onClick={() => setIsModalOpen(true)}
+          data-testid="add-listing-btn"
         >
           +
         </button>
@@ -334,8 +335,9 @@ const Sell: React.FC = () => {
           </h2>
           <form onSubmit={handleSubmit} className="product-form">
             <div className="form-group">
-              <label>Product Name</label>
+              <label htmlFor="Product Name">Product Name</label>
               <input
+                id = "Product Name"
                 type="text"
                 required
                 value={productData.name}
@@ -346,8 +348,9 @@ const Sell: React.FC = () => {
             </div>
 
             <div className="form-group">
-              <label>Description</label>
+              <label htmlFor="Description">Description</label>
               <textarea
+                id = "Description"
                 required
                 value={productData.description}
                 onChange={(e) =>
@@ -357,8 +360,9 @@ const Sell: React.FC = () => {
             </div>
 
             <div className="form-group">
-              <label>Price ($)</label>
+              <label htmlFor="price">Price ($)</label>
               <input
+                id = "price"
                 type="number"
                 required
                 step="0.01"
@@ -370,8 +374,9 @@ const Sell: React.FC = () => {
             </div>
 
             <div className="form-group">
-              <label>Category</label>
+              <label htmlFor="Category">Category</label>
               <select
+                id = "Category"
                 required
                 value={productData.category}
                 onChange={(e) =>
@@ -402,8 +407,9 @@ const Sell: React.FC = () => {
             </div>
 
             <div className="form-group">
-              <label>Upload Images</label>
+              <label htmlFor="Upload Images">Upload Images</label>
               <input
+                id = "Upload Images"
                 type="file"
                 accept="image/*"
                 multiple
