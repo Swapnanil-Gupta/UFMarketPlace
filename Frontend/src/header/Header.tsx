@@ -1,33 +1,38 @@
-import { useState, useEffect, FC } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser } from '@fortawesome/free-solid-svg-icons';
-import './Header.css';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, FC } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faUser } from "@fortawesome/free-solid-svg-icons";
+import "./Header.css";
+import { useNavigate } from "react-router-dom";
 
 const Header: FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
-  const [userEmail, setUserEmail] = useState<string>('');
-  const [name, setName] = useState<string>('');
+  const [userEmail, setUserEmail] = useState<string>("");
+
+  const [name, setName] = useState<string>("");
   const navigate = useNavigate();
 
   useEffect(() => {
-    const email = sessionStorage.getItem('email') || 'mani@gmail.com';
-    const userName = sessionStorage.getItem('name') || '';
+    const email = sessionStorage.getItem("email") || "mani@gmail.com";
+    const userName = sessionStorage.getItem("name") || "";
     setUserEmail(email);
     setName(userName);
   }, []);
 
   const handleLogout = (): void => {
     sessionStorage.clear();
-    navigate('/login');
+    navigate("/login");
   };
 
   const handleSell = (): void => {
-    navigate('/listing');
+    navigate("/listing");
+  };
+
+  const handleProfile = () => {
+    navigate("/profile");
   };
 
   const handleDashboard = (): void => {
-    navigate('/dashboard');
+    navigate("/dashboard");
   };
 
   return (
@@ -35,10 +40,12 @@ const Header: FC = () => {
       <div className="header-content">
         <h1 className="logo">
           <span className="logo-uf">UF</span>
-          <span className="logo-marketplace" onClick={handleDashboard}>Marketplace</span>
+          <span className="logo-marketplace" onClick={handleDashboard}>
+            Marketplace
+          </span>
         </h1>
         <div className="header-actions">
-          <button 
+          <button
             className="sell-button"
             onClick={handleSell}
             aria-label="Sell items"
@@ -46,25 +53,26 @@ const Header: FC = () => {
             Sell
           </button>
           <div className="user-section">
-            <button 
-              className="user-icon-btn" 
+            <button
+              className="user-icon-btn"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               aria-label="User menu"
             >
-              <FontAwesomeIcon 
-                icon={faUser} 
-                className={`user-icon ${isMenuOpen ? 'icon-active' : ''}`}
+              <FontAwesomeIcon
+                icon={faUser}
+                className={`user-icon ${isMenuOpen ? "icon-active" : ""}`}
               />
             </button>
-            <div className={`user-menu ${isMenuOpen ? 'active' : ''}`}>
+            <div className={`user-menu ${isMenuOpen ? "active" : ""}`}>
               <div className="user-info">
                 <p className="user-name">{name}</p>
                 <p className="user-email">{userEmail}</p>
+                <p className="profile" onClick={handleProfile}>
+                  {" "}
+                  {"View & Update profile information"}
+                </p>
               </div>
-              <button 
-                className="logout-btn"
-                onClick={handleLogout}
-              >
+              <button className="logout-btn" onClick={handleLogout}>
                 Logout
               </button>
             </div>

@@ -130,6 +130,17 @@
   opacity: 0;
 }
 
+.profile {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #2d7cae;
+  animation: fadeIn 0.4s ease-out 0.1s forwards;
+  opacity: 0;
+  text-decoration: underline;
+  cursor: pointer;
+  margin-top: 6px;
+}
+
 .logout-btn {
   background: linear-gradient(135deg, #0021a5, #1a34b0);
   color: white;

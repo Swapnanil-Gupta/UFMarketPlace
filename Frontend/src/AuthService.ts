@@ -59,7 +59,11 @@ api.interceptors.request.use(config => {
   return config;
 });
 
+
+
 export const authService = {
+
+  
   async login(payload: AuthPayload): Promise<AuthResponse> {
     try {
       const response = await api.post<AuthResponse>('/login', {
@@ -87,6 +91,18 @@ export const authService = {
         email: payload.email,
         password: payload.password
       });
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  },async changePassword(payload: AuthPayload): Promise<AuthResponse> {
+    try {
+      const response = await api.post<AuthResponse>('/changePassword', {
+        name: payload.name,
+        email: payload.email,
+        password: payload.password
+      });
+      
       return response.data;
     } catch (error) {
       throw this.handleError(error);
