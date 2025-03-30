@@ -1097,3 +1097,69 @@ This file contains unit tests for the `SellComponent`. The component is responsi
 - Ensures that API errors do not crash the component.
 - Displays appropriate feedback messages for failed actions.
 - Prevents submission if required fields are empty.
+
+
+---------
+# Dashboard Component Test Documentation
+
+This file contains unit tests for the `Dashboard` component. The component is responsible for displaying a list of products, handling user interactions, and showing product details in a modal. These tests validate the core functionalities and expected behaviors of the component.
+
+## Dependencies
+
+- `@testing-library/react`: Provides utilities for testing React components.
+- `jest`: Used for mocking functions, running tests, and handling assertions.
+- `react-router-dom`: Used for routing-related functionality, like navigation and path management.
+- `react-modal`: Used for displaying modals in the component.
+- `react-slick`: Used for the carousel functionality in the component.
+- `AuthService`: A mocked module that simulates fetching product listings.
+
+## Mocked Functions
+
+- **`jest.mock("react-router-dom")`**: Mocks `useNavigate` to simulate navigation between routes.
+- **`jest.mock("./AuthService")`**: Mocks the `authService.getListingsByOtheruser` function to simulate fetching product listings.
+- **`jest.mock("react-modal")`**: Mocks `react-modal` to simulate modal behavior.
+- **`jest.mock("react-slick")`**: Mocks `react-slick` to avoid rendering the carousel during testing.
+- **`global.URL.createObjectURL`**: Mocks the `createObjectURL` function to avoid errors when rendering images.
+
+## Test Setup
+
+- **`beforeEach`**: Initializes the mocks and sets up the testing environment.
+- **`afterEach`**: Cleans up after each test to ensure no side effects remain.
+
+## Test Scenarios
+
+### 1. **Rendering Dashboard and Fetching Product Listings**
+   - **Purpose**: Ensures that the `Dashboard` component correctly renders the list of products fetched from the API.
+   - **Test Steps**:
+     - Render the `Dashboard` component inside `MemoryRouter`.
+     - Wait for the products to be fetched and rendered.
+     - Verify that the product names are displayed on the screen.
+
+### 2. **Opening and Closing Modal with Product Details**
+   - **Purpose**: Ensures that clicking on a product opens a modal with the correct details, and the modal can be closed.
+   - **Test Steps**:
+     - Render the `Dashboard` component.
+     - Wait for the products to be displayed.
+     - Simulate a click on the product to open the modal.
+     - Verify that the product details (e.g., description, user info) are displayed in the modal.
+     - Close the modal by clicking the close button.
+     - Verify that the modal is closed and product details are no longer displayed.
+
+## Test Utilities
+
+- **`render`**: Renders the component into the DOM for testing.
+- **`screen`**: Provides access to the rendered component and allows querying elements.
+- **`fireEvent`**: Simulates user interactions like clicking and typing.
+- **`waitFor`**: Waits for asynchronous operations to complete.
+- **`MemoryRouter`**: Provides in-memory routing for testing components that use `react-router-dom`.
+
+## Mocked API Responses
+
+- **`authService.getListingsByOtheruser`**: Mocked to return a successful response containing product data with attributes like product name, description, price, and images.
+
+## Error Handling
+
+- Ensures that the application does not crash if the API request fails or if there are other unexpected behaviors.
+- Verifies that all modal interactions are smooth and do not cause any visual glitches.
+
+---------
