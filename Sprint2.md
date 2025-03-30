@@ -1015,4 +1015,85 @@ This file contains unit tests for the `Header` component. The `Header` component
 - No explicit error handling is tested in this file as it mainly focuses on component rendering and user interaction behavior.
 
 ---
+# Sell Component Test Documentation
 
+This file contains unit tests for the `SellComponent`. The component is responsible for handling product listings, user interactions, API requests, and UI updates. These tests validate its core functionalities and expected behaviors.
+
+## Dependencies
+
+- `@testing-library/react`: Provides utilities for testing React components.
+- `jest`: Used for mocking functions, running tests, and handling assertions.
+- `react-router-dom`: Used for routing-related functionality, like navigation and path management.
+- `apiService`: A mocked module that simulates API calls for fetching and submitting product data.
+
+## Mocked Functions
+
+- **`jest.mock("../apiService")`**: Mocks the `apiService` module functions:
+  - `fetchProducts`: Mocked to simulate fetching product listings from an API.
+  - `submitListing`: Mocked to simulate submitting a new product listing to an API.
+
+- **`jest.mock("react-router-dom")`**: Mocks `useNavigate` to simulate navigation between routes.
+
+## Test Setup
+
+- **`beforeEach`**: Clears all mocks and sets a default state before each test to maintain consistency.
+- **`afterEach`**: Cleans up sessionStorage and unmounts components after each test.
+
+## Test Scenarios
+
+### 1. **Rendering SellComponent and Fetching Product Listings on Mount**
+   - **Purpose**: Ensures that when the `SellComponent` is mounted, product data is fetched from the API and displayed.
+   - **Test Steps**:
+     - Render the component.
+     - Verify that the API call to `fetchProducts` is made.
+     - Ensure that the products are displayed correctly.
+
+### 2. **Displays Loading Indicator Before Products Load**
+   - **Purpose**: Ensures that a loading state is shown while waiting for the API response.
+   - **Test Steps**:
+     - Render the component.
+     - Check for the presence of a loading message/spinner.
+     - Confirm that the loading indicator disappears once data is loaded.
+
+### 3. **Handles API Errors Gracefully**
+   - **Purpose**: Ensures that an error message is displayed if the API request fails.
+   - **Test Steps**:
+     - Mock `fetchProducts` to reject with an error.
+     - Render the component.
+     - Verify that an error message is shown to the user.
+
+### 4. **Submitting a New Product Listing and Handling Responses**
+   - **Purpose**: Confirms that the form submission triggers the `submitListing` function and handles success/failure correctly.
+   - **Test Steps**:
+     - Render the component.
+     - Fill out the form fields with product details.
+     - Click the submit button.
+     - Verify that `submitListing` is called with correct values.
+     - Check for success message if submission is successful.
+     - Check for error message if submission fails.
+
+### 5. **Navigating to Another Page on Button Click**
+   - **Purpose**: Ensures that clicking the navigation button redirects the user to another page.
+   - **Test Steps**:
+     - Render the component.
+     - Simulate a button click.
+     - Verify that `mockNavigate` is called with the expected route.
+
+## Test Utilities
+
+- **`render`**: Renders the component into the DOM for testing.
+- **`screen`**: Provides access to the rendered component and allows querying elements.
+- **`fireEvent`**: Simulates user interactions like typing and clicking.
+- **`waitFor`**: Waits for asynchronous operations to complete.
+- **`act`**: Simulates actions that cause state changes.
+
+## Mocked API Responses
+
+- **`fetchProducts`**: Mocked to return a successful response containing sample product data.
+- **`submitListing`**: Mocked to resolve on success or reject with an error message on failure.
+
+## Error Handling
+
+- Ensures that API errors do not crash the component.
+- Displays appropriate feedback messages for failed actions.
+- Prevents submission if required fields are empty.
