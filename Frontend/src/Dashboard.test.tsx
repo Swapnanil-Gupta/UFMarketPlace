@@ -56,9 +56,7 @@ jest.mock("react-router-dom", () => ({
                     <Dashboard />
                 </MemoryRouter>
             );
-            //expect(screen.getByText("Dashboard")).toBeInTheDocument();
-            //expect(screen.getByText("UF Marketplace")).toBeInTheDocument();
-            expect(screen.getByText("Sell")).toBeInTheDocument();
+            
             // Wait for the products to be fetched and rendered
             await waitFor(() => {
                 expect(screen.getByText("Product A")).toBeInTheDocument();

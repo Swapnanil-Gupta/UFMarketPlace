@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Header from './header/Header';
+import Footer from './footer/Footer';
 import Modal from 'react-modal';
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
@@ -73,8 +74,7 @@ const Dashboard: React.FC = () => {
   };
 
   return (
-    <div>
-      <Header />
+    <div className='app-container'>
       <div className="dashboard-container">
         <div className="products-grid">
           {products.map(product => (
@@ -101,6 +101,7 @@ const Dashboard: React.FC = () => {
                   <span className="category">{product.category}</span>
                 </div>
               </div>
+              
             </div>
           ))}
         </div>
