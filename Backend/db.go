@@ -153,24 +153,31 @@ func initListingsDB() error {
 }
 
 
-func ValidateSession(sessionID string) (bool, error) {
+func ValidateSession(sessionID, userID string) (bool, error) {
+		if sessionID == "" || userID == "" {
+			return false, fmt.Errorf("invalid session or user id")
+		}
+
     var retrievedSessionID string
+    var retrievedUserID string
     currentTime := time.Now().Unix()
 
     // Query to check session validity
     err := db.QueryRow(
-        `SELECT session_id FROM sessions 
+        `SELECT session_id, user_id FROM sessions 
         WHERE session_id = $1 
-        AND expires_at > $2`,
+        AND expires_at > to_timestamp($2)`,
         sessionID,
         currentTime,
-    ).Scan(&retrievedSessionID)
+    ).Scan(&retrievedSessionID, &retrievedUserID)
 
     switch {
-    case err == sql.ErrNoRows:
-        return false, nil
     case err != nil:
         return false, fmt.Errorf("database error: %w", err)
+    case err == sql.ErrNoRows:
+        return false, nil
+		case retrievedUserID != userID:
+        return false, fmt.Errorf("invalid user")		
     default:
         return true, nil
     }

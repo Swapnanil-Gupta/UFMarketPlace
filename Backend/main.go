@@ -27,7 +27,19 @@ type Config struct {
 
 var appConfig Config
 
+func ValidateSessionMiddleware(next func (http.ResponseWriter, *http.Request)) func (http.ResponseWriter, *http.Request) {
+	return func (w http.ResponseWriter, r *http.Request) {
+		sessionId := r.Header.Get("X-Session-ID")
+		userId := r.Header.Get("userId")
+		valid, err := ValidateSession(sessionId, userId)
+		if !valid || err != nil {
+			http.Error(w, "Session validation error", http.StatusUnauthorized)
+			return
+		}
 
+		next(w, r)
+	}
+}
 
 func main() {
 	var err error
@@ -75,9 +87,9 @@ func main() {
 	router := http.NewServeMux()
 	router.HandleFunc("/signup", signupHandler)
 	router.HandleFunc("/login", loginHandler)
-	router.HandleFunc("/deleteUser", deleteUserHandler)
+	router.HandleFunc("/deleteUser", ValidateSessionMiddleware(deleteUserHandler))
 	router.HandleFunc("/listings", listingsHandler)              // GET (all listings except current user) & POST (create new listing)
-	router.HandleFunc("/listings/user", userListingsHandler)       // GET (listings for current user)
+	router.HandleFunc("/listings/user", ValidateSessionMiddleware(userListingsHandler))       // GET (listings for current user)
 	router.HandleFunc("/listing/updateListing", editListingHandler)   // PUT (edit listing)
 	router.HandleFunc("/listing/deleteListing", deleteListingHandler) // DELETE (delete listing)
 	router.HandleFunc("/sendEmailVerificationCode", sendVerificationCodeHandler)
