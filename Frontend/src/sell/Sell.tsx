@@ -286,9 +286,7 @@ const Sell: React.FC = () => {
   };
 
   return (
-    <div>
-      <Header />
-      <div className="sell-container">
+    <div className="sell-container">
         <h2 className="listings-header">My Listings</h2>
         
         <div className="listings-grid">
@@ -464,7 +462,6 @@ const Sell: React.FC = () => {
             </div>
           </form>
         </Modal>
-      </div>
     </div>
   );
 };

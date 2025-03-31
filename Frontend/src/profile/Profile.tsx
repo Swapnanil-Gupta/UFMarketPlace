@@ -60,128 +60,125 @@ const Profile = () => {
   };
 
   return (
-    <div>
-      <Header />
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="profile-container"
-      >
-        <h1 className="profile-title">Profile</h1>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="profile-container"
+    >
+      <h1 className="profile-title">Profile</h1>
 
-        <div className="profile-content">
-          <div className="profile-field">
-            <label className="profile-label">Name</label>
-            <p className="profile-value">{name}</p>
-          </div>
-
-          <div className="profile-field">
-            <label className="profile-label">Email</label>
-            <p className="profile-value">{userEmail}</p>
-          </div>
-
-          {!showPasswordForm && (
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="change-password-btn"
-              onClick={() => {
-                setShowPasswordForm(true);
-                setError("");
-                setSuccess("");
-              }}
-            >
-              Change Password
-            </motion.button>
-          )}
-
-          {showPasswordForm && (
-            <motion.form
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              onSubmit={handlePasswordChange}
-              className="password-form"
-            >
-              <div className="form-group">
-                <label htmlFor="currentPassword" className="form-label">
-                  Current Password
-                </label>
-                <input
-                  type="password"
-                  id="currentPassword"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="form-input"
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="newPassword" className="form-label">
-                  New Password
-                </label>
-                <input
-                  type="password"
-                  id="newPassword"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="form-input"
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="confirmPassword" className="form-label">
-                  Confirm New Password
-                </label>
-                <input
-                  type="password"
-                  id="confirmPassword"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="form-input"
-                  required
-                />
-              </div>
-
-              {(error || success) && (
-                <div className="message-container">
-                  {error && <p className="error-message">{error}</p>}
-                  {success && <p className="success-message">{success}</p>}
-                </div>
-              )}
-
-              <div className="form-buttons">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  type="submit"
-                  className="submit-btn"
-                >
-                  Save Changes
-                </motion.button>
-
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  type="button"
-                  onClick={() => {
-                    setShowPasswordForm(false);
-                    setError("");
-                    setSuccess("");
-                  }}
-                  className="cancel-btn"
-                >
-                  Cancel
-                </motion.button>
-              </div>
-            </motion.form>
-          )}
+      <div className="profile-content">
+        <div className="profile-field">
+          <label className="profile-label">Name</label>
+          <p className="profile-value">{name}</p>
         </div>
-      </motion.div>
-    </div>
+
+        <div className="profile-field">
+          <label className="profile-label">Email</label>
+          <p className="profile-value">{userEmail}</p>
+        </div>
+
+        {!showPasswordForm && (
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="change-password-btn"
+            onClick={() => {
+              setShowPasswordForm(true);
+              setError("");
+              setSuccess("");
+            }}
+          >
+            Change Password
+          </motion.button>
+        )}
+
+        {showPasswordForm && (
+          <motion.form
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            onSubmit={handlePasswordChange}
+            className="password-form"
+          >
+            <div className="form-group">
+              <label htmlFor="currentPassword" className="form-label">
+                Current Password
+              </label>
+              <input
+                type="password"
+                id="currentPassword"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                className="form-input"
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="newPassword" className="form-label">
+                New Password
+              </label>
+              <input
+                type="password"
+                id="newPassword"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="form-input"
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="confirmPassword" className="form-label">
+                Confirm New Password
+              </label>
+              <input
+                type="password"
+                id="confirmPassword"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="form-input"
+                required
+              />
+            </div>
+
+            {(error || success) && (
+              <div className="message-container">
+                {error && <p className="error-message">{error}</p>}
+                {success && <p className="success-message">{success}</p>}
+              </div>
+            )}
+
+            <div className="form-buttons">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                type="submit"
+                className="submit-btn"
+              >
+                Save Changes
+              </motion.button>
+
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                type="button"
+                onClick={() => {
+                  setShowPasswordForm(false);
+                  setError("");
+                  setSuccess("");
+                }}
+                className="cancel-btn"
+              >
+                Cancel
+              </motion.button>
+            </div>
+          </motion.form>
+        )}
+      </div>
+    </motion.div>
   );
 };
 
