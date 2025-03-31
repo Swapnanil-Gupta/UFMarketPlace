@@ -30,7 +30,7 @@ func initDB() error {
 		session_id TEXT PRIMARY KEY,
 		user_id INTEGER NOT NULL,
 		expires_at TIMESTAMPTZ NOT NULL,
-		FOREIGN KEY(user_id) REFERENCES users(id)
+		FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
 	);`
 	if _, err := db.Exec(sessionsTable); err != nil {
 		return fmt.Errorf("error creating sessions table: %v", err)
@@ -38,7 +38,7 @@ func initDB() error {
 
 	verificationCodesTable := `
 	CREATE TABLE IF NOT EXISTS verification_codes (
-		user_id INT PRIMARY KEY REFERENCES users(id),
+		user_id INT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
 		email TEXT NOT NULL,
 		code TEXT NOT NULL,
 		expires_at BIGINT NOT NULL
@@ -132,7 +132,7 @@ func initListingsDB() error {
 		category TEXT,
 		created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
 		updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-		FOREIGN KEY(user_id) REFERENCES users(id)
+		FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
 	);`
 	if _, err := db.Exec(listingsTable); err != nil {
 		return fmt.Errorf("error creating listings table: %v", err)
@@ -144,7 +144,7 @@ func initListingsDB() error {
 		listing_id INTEGER NOT NULL,
 		image_data BYTEA NOT NULL,
 		content_type TEXT NOT NULL,
-		FOREIGN KEY(listing_id) REFERENCES listings(id)
+		FOREIGN KEY(listing_id) REFERENCES listings(id) ON DELETE CASCADE
 	);`
 	if _, err := db.Exec(imagesTable); err != nil {
 		return fmt.Errorf("error creating listing_images table: %v", err)

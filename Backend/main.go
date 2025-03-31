@@ -52,7 +52,7 @@ func main() {
 	// Use an environment variable for connection string or default value.
 	connStr := os.Getenv("POSTGRES_CONN")
 	if connStr == "" {
-		connStr = "postgres://ufmarketplace:8658@localhost:5432/ufmarketplace?sslmode=disable"
+		connStr = "postgres://postgres:1234@localhost:5432/ufmarketplace?sslmode=disable"
 	}
 
 	db, err = sql.Open("postgres", connStr)
@@ -75,6 +75,7 @@ func main() {
 	router := http.NewServeMux()
 	router.HandleFunc("/signup", signupHandler)
 	router.HandleFunc("/login", loginHandler)
+	router.HandleFunc("/deleteUser", deleteUserHandler)
 	router.HandleFunc("/listings", listingsHandler)              // GET (all listings except current user) & POST (create new listing)
 	router.HandleFunc("/listings/user", userListingsHandler)       // GET (listings for current user)
 	router.HandleFunc("/listing/updateListing", editListingHandler)   // PUT (edit listing)
